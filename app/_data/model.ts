@@ -1,1 +1,1 @@
-export const model = 'gemini-2.5-flash';
+export const model = 'gemini-3-flash-preview';
