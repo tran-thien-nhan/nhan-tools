@@ -5,6 +5,7 @@ import ReactMarkdown from 'react-markdown';
 import { cn, copyToClipboard } from '../utils';
 import { GoogleGenAI } from "@google/genai";
 import { prompt_1, prompt_2 } from '../_data/prompt';
+import { model } from '../_data/model';
 
 const AISummarize = () => {
     const [summarizerInput, setSummarizerInput] = useState('');
@@ -23,7 +24,7 @@ const AISummarize = () => {
         try {
             const ai = new GoogleGenAI({ apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY });
             const response = await ai.models.generateContent({
-                model: "gemini-2.5-flash",
+                model: model,
                 contents: `${prompt_1}:\n\n${summarizerInput}`,
                 config: {
                     systemInstruction: `${prompt_2}`,

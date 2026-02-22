@@ -30,5 +30,21 @@
         "icon": "Brain",
         "path": "/ai-summarizer",
         "color": "emerald"
+    },
+    {
+        "id": "seo-tag-generator",
+        "name": "SEO Tag Generator",
+        "description": "Tự động tạo thẻ meta, tiêu đề và từ khóa SEO",
+        "icon": "Tag",
+        "path": "/seo-tag-generator",
+        "color": "amber"
+    },
+    {
+        "id": "real-estate-post",
+        "name": "Real Estate Post",
+        "description": "Tạo tin đăng bất động sản chuyên nghiệp",
+        "icon": "Building2",
+        "path": "/real-estate-post",
+        "color": "amber"
     }
 ]
