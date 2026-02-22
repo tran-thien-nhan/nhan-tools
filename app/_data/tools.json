@@ -1,0 +1,34 @@
+[
+    {
+        "id": "home",
+        "name": "Home",
+        "description": "trang chủ",
+        "icon": "Home",
+        "path": "/",
+        "color": "indigo"
+    },
+    {
+        "id": "code-generator",
+        "name": "Code Generator",
+        "description": "Generate secure random strings",
+        "icon": "Binary",
+        "path": "/code-gen",
+        "color": "indigo"
+    },
+    {
+        "id": "tabata-timer",
+        "name": "Tabata Timer",
+        "description": "High-intensity interval training timer",
+        "icon": "Zap",
+        "path": "/tabata-timer",
+        "color": "purple"
+    },
+    {
+        "id": "ai-summarizer",
+        "name": "AI Summarizer",
+        "description": "Tóm tắt văn bản thông minh bằng AI",
+        "icon": "Brain",
+        "path": "/ai-summarizer",
+        "color": "emerald"
+    }
+]
