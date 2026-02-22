@@ -1,5 +1,5 @@
 "use client"
-import { Check, Copy, Loader2, Sparkles, RotateCcw, Hash } from 'lucide-react';
+import { Check, Copy, Loader2, Sparkles, RotateCcw, Hash, Phone } from 'lucide-react';
 import React, { useState } from 'react';
 import { cn, copyToClipboard } from '../utils';
 import { GoogleGenAI } from "@google/genai";
@@ -11,6 +11,7 @@ const HashtagGenerator = () => {
     const [isGenerating, setIsGenerating] = useState(false);
     const [error, setError] = useState('');
     const [copied, setCopied] = useState(false);
+    const [contactCopied, setContactCopied] = useState(false);
     const [selectedCount, setSelectedCount] = useState<number>(30);
 
     const handleGenerate = async () => {
@@ -92,11 +93,17 @@ CHÚ Ý: Phải tạo ĐỦ ${selectedCount} hashtag. KHÔNG thêm text giải t
         setHashtags([]);
         setError('');
         setCopied(false);
+        setContactCopied(false);
     };
 
     const copyAllHashtags = () => {
         const text = hashtags.join(' ');
         copyToClipboard(setCopied, text);
+    };
+
+    const copyContactInfo = () => {
+        const contactText = "Liên hệ trực tiếp Nhân 0909941199 để được hỗ trợ xem nhà, kiểm tra pháp lý – quy hoạch rõ ràng, thương lượng giá tốt nhất với chủ và hỗ trợ trọn gói công chứng, sang tên nhanh gọn.";
+        copyToClipboard(setContactCopied, contactText);
     };
 
     return (
@@ -269,6 +276,34 @@ CHÚ Ý: Phải tạo ĐỦ ${selectedCount} hashtag. KHÔNG thêm text giải t
                         )}
                     </div>
                 )}
+
+                {/* Contact Information with Copy Button */}
+                <div className="px-4 sm:px-6 py-4 bg-gradient-to-r from-blue-600 to-cyan-600 border-t border-blue-700">
+                    <div className="flex items-center gap-3">
+                        <div className="flex-1">
+                            <p className="text-xs sm:text-sm text-white flex items-center gap-2">
+                                <Phone className="w-4 h-4 text-white flex-shrink-0" />
+                                <span>Liên hệ trực tiếp Nhân 0909941199 để được hỗ trợ xem nhà, kiểm tra pháp lý – quy hoạch rõ ràng, thương lượng giá tốt nhất với chủ và hỗ trợ trọn gói công chứng, sang tên nhanh gọn.</span>
+                            </p>
+                        </div>
+                        <button
+                            onClick={copyContactInfo}
+                            className="flex-shrink-0 px-4 py-2 bg-white hover:bg-blue-50 text-blue-600 rounded-lg text-xs sm:text-sm font-bold transition-all hover:scale-105 active:scale-95 shadow-lg flex items-center gap-2"
+                        >
+                            {contactCopied ? (
+                                <>
+                                    <Check className="w-4 h-4" />
+                                    ĐÃ COPY
+                                </>
+                            ) : (
+                                <>
+                                    <Copy className="w-4 h-4" />
+                                    COPY
+                                </>
+                            )}
+                        </button>
+                    </div>
+                </div>
 
                 {/* Tips */}
                 <div className="px-4 sm:px-6 py-3 bg-blue-50 border-t border-blue-200">

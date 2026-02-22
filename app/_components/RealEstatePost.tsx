@@ -1,5 +1,5 @@
 "use client"
-import { Check, Copy, Loader2, Sparkles, RotateCcw, Building2 } from 'lucide-react';
+import { Check, Copy, Loader2, Sparkles, RotateCcw, Building2, Phone } from 'lucide-react';
 import React, { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { cn, copyToClipboard } from '../utils';
@@ -13,6 +13,7 @@ const RealEstatePost = () => {
     const [isGenerating, setIsGenerating] = useState(false);
     const [error, setError] = useState('');
     const [copied, setCopied] = useState(false);
+    const [contactCopied, setContactCopied] = useState(false);
 
     const handleGenerate = async () => {
         if (!inputText.trim()) {
@@ -58,6 +59,11 @@ ${prompt_3}`;
         setGeneratedPost('');
         setError('');
         setCopied(false);
+    };
+
+    const copyContactInfo = () => {
+        const contactText = "Liên hệ trực tiếp Nhân 0909941199 để được hỗ trợ xem nhà, kiểm tra pháp lý – quy hoạch rõ ràng, thương lượng giá tốt nhất với chủ và hỗ trợ trọn gói công chứng, sang tên nhanh gọn.";
+        copyToClipboard(setContactCopied, contactText);
     };
 
     return (
@@ -169,6 +175,34 @@ ${prompt_3}`;
                                 </button>
                             </div>
                         )}
+                    </div>
+                </div>
+
+                {/* Contact Information with Copy Button */}
+                <div className="px-4 sm:px-6 py-4 bg-gradient-to-r from-blue-600 to-cyan-600 border-t border-blue-700">
+                    <div className="flex items-center gap-3">
+                        <div className="flex-1">
+                            <p className="text-xs sm:text-sm text-white flex items-center gap-2">
+                                <Phone className="w-4 h-4 text-white flex-shrink-0" />
+                                <span>Liên hệ trực tiếp Nhân 0909941199 để được hỗ trợ xem nhà, kiểm tra pháp lý – quy hoạch rõ ràng, thương lượng giá tốt nhất với chủ và hỗ trợ trọn gói công chứng, sang tên nhanh gọn.</span>
+                            </p>
+                        </div>
+                        <button
+                            onClick={copyContactInfo}
+                            className="flex-shrink-0 px-4 py-2 bg-white hover:bg-blue-50 text-blue-600 rounded-lg text-xs sm:text-sm font-bold transition-all hover:scale-105 active:scale-95 shadow-lg flex items-center gap-2"
+                        >
+                            {contactCopied ? (
+                                <>
+                                    <Check className="w-4 h-4" />
+                                    ĐÃ COPY
+                                </>
+                            ) : (
+                                <>
+                                    <Copy className="w-4 h-4" />
+                                    COPY
+                                </>
+                            )}
+                        </button>
                     </div>
                 </div>
 
