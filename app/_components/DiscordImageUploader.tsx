@@ -11,7 +11,8 @@ import {
     ExternalLink,
     Trash2,
     MessageSquare,
-    Link as LinkIcon
+    Link as LinkIcon,
+    List
 } from 'lucide-react';
 import { cn } from '@/app/utils';
 import { DISCORD_WEBHOOK_URL, ALLOWED_FILE_TYPES, MAX_FILE_SIZE } from '@/app/_data/discordConfig';
@@ -33,6 +34,8 @@ const DiscordImageUploader: React.FC = () => {
     const [showWebhookInput, setShowWebhookInput] = useState(!DISCORD_WEBHOOK_URL);
     const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
     const [uploadAllStatus, setUploadAllStatus] = useState<'idle' | 'uploading'>('idle');
+    const [copiedAllUrls, setCopiedAllUrls] = useState(false);
+    const [showUrlList, setShowUrlList] = useState(false);
 
     // Validate file
     const validateFile = (file: File): { valid: boolean; error?: string } => {
@@ -56,11 +59,10 @@ const DiscordImageUploader: React.FC = () => {
         if (!selectedFiles) return;
 
         const newFiles: UploadedFile[] = [];
-        
+
         Array.from(selectedFiles).forEach(file => {
             const validation = validateFile(file);
             if (!validation.valid) {
-                // Hiển thị lỗi nhưng vẫn thêm file với status error
                 const preview = URL.createObjectURL(file);
                 newFiles.push({
                     id: Math.random().toString(36).substring(7),
@@ -122,6 +124,7 @@ const DiscordImageUploader: React.FC = () => {
             }
         });
         setFiles([]);
+        setShowUrlList(false);
     };
 
     // Upload single file to Discord
@@ -134,7 +137,6 @@ const DiscordImageUploader: React.FC = () => {
         const formData = new FormData();
         formData.append('file', file.file);
 
-        // Thêm payload_json để gửi kèm thông báo
         const payload = {
             content: `📸 **${file.file.name}**\nKích thước: ${(file.file.size / 1024).toFixed(2)} KB`
         };
@@ -150,11 +152,8 @@ const DiscordImageUploader: React.FC = () => {
         }
 
         const data = await response.json();
-        
-        // Lấy URL của ảnh vừa upload
-        // Discord trả về attachment trong response
         const attachmentUrl = data.attachments?.[0]?.url;
-        
+
         return attachmentUrl;
     };
 
@@ -166,47 +165,46 @@ const DiscordImageUploader: React.FC = () => {
         }
 
         setUploadAllStatus('uploading');
-        
+
         for (let i = 0; i < files.length; i++) {
             const file = files[i];
             if (file.status !== 'pending') continue;
 
-            setFiles(prev => prev.map(f => 
+            setFiles(prev => prev.map(f =>
                 f.id === file.id ? { ...f, status: 'uploading', progress: 0 } : f
             ));
 
             try {
-                // Update progress
                 const progressInterval = setInterval(() => {
-                    setFiles(prev => prev.map(f => 
-                        f.id === file.id && f.progress < 90 
-                            ? { ...f, progress: f.progress + 10 } 
+                    setFiles(prev => prev.map(f =>
+                        f.id === file.id && f.progress < 90
+                            ? { ...f, progress: f.progress + 10 }
                             : f
                     ));
                 }, 200);
 
                 const discordUrl = await uploadToDiscord(file);
-                
+
                 clearInterval(progressInterval);
-                
-                setFiles(prev => prev.map(f => 
-                    f.id === file.id 
-                        ? { 
-                            ...f, 
-                            status: 'success', 
+
+                setFiles(prev => prev.map(f =>
+                    f.id === file.id
+                        ? {
+                            ...f,
+                            status: 'success',
                             progress: 100,
-                            discordUrl 
-                          } 
+                            discordUrl
+                        }
                         : f
                 ));
             } catch (error) {
-                setFiles(prev => prev.map(f => 
-                    f.id === file.id 
-                        ? { 
-                            ...f, 
-                            status: 'error', 
-                            message: error instanceof Error ? error.message : 'Upload thất bại' 
-                          } 
+                setFiles(prev => prev.map(f =>
+                    f.id === file.id
+                        ? {
+                            ...f,
+                            status: 'error',
+                            message: error instanceof Error ? error.message : 'Upload thất bại'
+                        }
                         : f
                 ));
             }
@@ -226,6 +224,24 @@ const DiscordImageUploader: React.FC = () => {
         }
     };
 
+    // Copy all URLs as comma-separated list
+    const copyAllUrlsAsList = async () => {
+        const successfulUrls = files
+            .filter(f => f.status === 'success' && f.discordUrl)
+            .map(f => f.discordUrl)
+            .join(', ');
+
+        if (!successfulUrls) return;
+
+        try {
+            await navigator.clipboard.writeText(successfulUrls);
+            setCopiedAllUrls(true);
+            setTimeout(() => setCopiedAllUrls(false), 2000);
+        } catch (err) {
+            console.error('Failed to copy URLs:', err);
+        }
+    };
+
     // Get status counts
     const getStatusCounts = () => {
         return {
@@ -238,6 +254,7 @@ const DiscordImageUploader: React.FC = () => {
     };
 
     const counts = getStatusCounts();
+    const successfulUrls = files.filter(f => f.status === 'success' && f.discordUrl).map(f => f.discordUrl);
 
     return (
         <div className="w-full h-full flex items-start justify-center p-4 sm:p-6 lg:p-8 bg-gradient-to-br from-indigo-50 to-blue-50">
@@ -315,7 +332,7 @@ const DiscordImageUploader: React.FC = () => {
                                 className="hidden"
                                 onChange={(e) => handleFiles(e.target.files)}
                             />
-                            
+
                             <div className="text-center">
                                 <div className="inline-flex p-4 bg-indigo-100 rounded-full mb-4">
                                     <ImageIcon className="w-8 h-8 text-indigo-600" />
@@ -381,7 +398,7 @@ const DiscordImageUploader: React.FC = () => {
                                                     alt={file.file.name}
                                                     className="w-full h-full object-cover"
                                                 />
-                                                
+
                                                 {/* Status Overlay */}
                                                 {file.status === 'uploading' && (
                                                     <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
@@ -391,7 +408,7 @@ const DiscordImageUploader: React.FC = () => {
                                                         </div>
                                                     </div>
                                                 )}
-                                                
+
                                                 {file.status === 'success' && (
                                                     <div className="absolute top-2 right-2">
                                                         <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
@@ -399,7 +416,7 @@ const DiscordImageUploader: React.FC = () => {
                                                         </div>
                                                     </div>
                                                 )}
-                                                
+
                                                 {file.status === 'error' && (
                                                     <div className="absolute top-2 right-2">
                                                         <div className="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center">
@@ -407,7 +424,7 @@ const DiscordImageUploader: React.FC = () => {
                                                         </div>
                                                     </div>
                                                 )}
-                                                
+
                                                 {/* Remove Button */}
                                                 <button
                                                     onClick={(e) => {
@@ -419,7 +436,7 @@ const DiscordImageUploader: React.FC = () => {
                                                     <X className="w-4 h-4 text-white" />
                                                 </button>
                                             </div>
-                                            
+
                                             {/* Info */}
                                             <div className="p-2">
                                                 <p className="text-xs text-indigo-900 truncate" title={file.file.name}>
@@ -428,7 +445,7 @@ const DiscordImageUploader: React.FC = () => {
                                                 <p className="text-xs text-indigo-500">
                                                     {(file.file.size / 1024).toFixed(1)} KB
                                                 </p>
-                                                
+
                                                 {/* Discord URL */}
                                                 {file.discordUrl && (
                                                     <div className="mt-2 flex items-center gap-1">
@@ -452,7 +469,7 @@ const DiscordImageUploader: React.FC = () => {
                                                         </button>
                                                     </div>
                                                 )}
-                                                
+
                                                 {/* Error Message */}
                                                 {file.message && (
                                                     <p className="text-xs text-red-500 mt-1">
@@ -476,10 +493,62 @@ const DiscordImageUploader: React.FC = () => {
                                         ) : (
                                             <Upload className="w-4 h-4 sm:w-5 sm:h-5" />
                                         )}
-                                        {uploadAllStatus === 'uploading' 
-                                            ? `ĐANG UPLOAD... (${counts.success}/${counts.total})` 
+                                        {uploadAllStatus === 'uploading'
+                                            ? `ĐANG UPLOAD... (${counts.success}/${counts.total})`
                                             : 'UPLOAD TẤT CẢ LÊN DISCORD'}
                                     </button>
+                                )}
+
+                                {/* PHẦN MỚI: Danh sách URLs dạng text */}
+                                {successfulUrls.length > 0 && (
+                                    <div className="mt-6 space-y-3">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <button
+                                                    onClick={() => setShowUrlList(!showUrlList)}
+                                                    className="flex items-center gap-1 text-xs font-semibold text-indigo-700 uppercase tracking-wider hover:text-indigo-800"
+                                                >
+                                                    <List className="w-4 h-4" />
+                                                    {showUrlList ? 'ẨN DANH SÁCH URLs' : 'HIỆN DANH SÁCH URLs'}
+                                                </button>
+                                                <span className="text-xs text-indigo-500">
+                                                    ({successfulUrls.length} URLs)
+                                                </span>
+                                            </div>
+                                            <button
+                                                onClick={copyAllUrlsAsList}
+                                                className={cn(
+                                                    "px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5",
+                                                    copiedAllUrls
+                                                        ? "bg-green-100 text-green-700"
+                                                        : "bg-indigo-100 text-indigo-700 hover:bg-indigo-200"
+                                                )}
+                                            >
+                                                {copiedAllUrls ? (
+                                                    <>
+                                                        <Check className="w-3.5 h-3.5" />
+                                                        ĐÃ COPY
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Copy className="w-3.5 h-3.5" />
+                                                        COPY TẤT CẢ URLs
+                                                    </>
+                                                )}
+                                            </button>
+                                        </div>
+
+                                        {showUrlList && (
+                                            <div className="relative">
+                                                <div className="p-4 bg-gray-50 rounded-xl border border-indigo-100 font-mono text-xs whitespace-pre-wrap break-all max-h-40 overflow-y-auto">
+                                                    {successfulUrls.join(', ')}
+                                                </div>
+                                                <p className="text-xs text-indigo-500 mt-2">
+                                                    ⚡ Các URLs được ngăn cách bằng dấu phẩy, sẵn sàng để paste vào bất kỳ đâu
+                                                </p>
+                                            </div>
+                                        )}
+                                    </div>
                                 )}
                             </div>
                         )}
@@ -495,7 +564,7 @@ const DiscordImageUploader: React.FC = () => {
                 </div>
 
                 {/* Footer */}
-                {/* {files.length > 0 && (
+                {files.length > 0 && (
                     <div className="px-4 sm:px-6 py-2 sm:py-3 bg-indigo-50/50 border-t border-indigo-100 text-xs text-indigo-500 flex justify-between items-center">
                         <span>
                             Tổng dung lượng: {(files.reduce((acc, f) => acc + f.file.size, 0) / 1024 / 1024).toFixed(2)} MB
@@ -504,7 +573,7 @@ const DiscordImageUploader: React.FC = () => {
                             {counts.success}/{counts.total} thành công
                         </span>
                     </div>
-                )} */}
+                )}
             </div>
         </div>
     );

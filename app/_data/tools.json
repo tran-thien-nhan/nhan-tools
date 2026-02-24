@@ -78,5 +78,13 @@
         "icon": "Calculator",
         "path": "/real-estate-fee-calculator",
         "color": "emerald"
+    },
+    {
+        "id": "flappy-bird",
+        "name": "Game flappy bird",
+        "description": "Game flappy bird",
+        "icon": "Game",
+        "path": "/flappy-bird",
+        "color": "green"
     }
 ]
