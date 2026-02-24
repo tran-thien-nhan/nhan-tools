@@ -14,7 +14,7 @@ import {
     AlertCircle
 } from 'lucide-react';
 import { cn } from '@/app/utils';
-import { ALLOWED_FILE_TYPES, MAX_FILE_SIZE } from '@/app/_data/discordConfig';
+import { ALLOWED_FILE_TYPES, MAX_FILE_SIZE, webhookUrl } from '@/app/_data/discordConfig';
 
 interface UploadedFile {
     id: string;
@@ -35,8 +35,6 @@ const DiscordImageUploader: React.FC = () => {
     const [showUrlList, setShowUrlList] = useState(false);
     const [webhookError, setWebhookError] = useState<string | null>(null);
 
-    // Lấy webhook URL từ env
-    const webhookUrl = process.env.NEXT_PUBLIC_DISCORD_WEBHOOK_URL;
 
     // Kiểm tra webhook URL khi component mount
     React.useEffect(() => {
