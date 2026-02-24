@@ -54,5 +54,13 @@
         "icon": "BookOpen",
         "path": "/prompt-library",
         "color": "purple"
+    },
+    {
+        "id": "tarot-reader",
+        "name": "Tarot Reader AI",
+        "description": "Xem bói Tarot với trí tuệ nhân tạo",
+        "icon": "Moon",
+        "path": "/tarot",
+        "color": "purple"
     }
 ]
