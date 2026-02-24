@@ -62,5 +62,21 @@
         "icon": "Moon",
         "path": "/tarot",
         "color": "purple"
+    },
+    {
+        "id": "discord-uploader",
+        "name": "Discord Image Uploader",
+        "description": "Upload trực tiếp hình ảnh lên Discord channel",
+        "icon": "Upload",
+        "path": "/discord-image-uploader",
+        "color": "indigo"
+    },
+    {
+        "id": "real-estate-fee-calculator",
+        "name": "Tính Chi Phí BĐS",
+        "description": "Tính thuế trước bạ, phí công chứng, sang tên, môi giới và lãi vay ngân hàng",
+        "icon": "Calculator",
+        "path": "/real-estate-fee-calculator",
+        "color": "emerald"
     }
 ]

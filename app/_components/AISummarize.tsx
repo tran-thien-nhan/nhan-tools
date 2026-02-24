@@ -1,5 +1,5 @@
 "use client"
-import { Check, Copy, Loader2, Sparkles, RotateCcw } from 'lucide-react';
+import { Check, Copy, Loader2, Sparkles, RotateCcw, ExternalLink } from 'lucide-react';
 import React, { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { cn, copyToClipboard } from '../utils';
@@ -51,6 +51,11 @@ const AISummarize = () => {
         setCopied(false);
     };
 
+    // Hàm mở trang trích xuất nội dung
+    const openTranscriptExtractor = () => {
+        window.open('https://www.youtube-transcript.io/', '_blank', 'noopener,noreferrer');
+    };
+
     return (
         <div className="w-full h-full flex items-start justify-center p-4 sm:p-6 lg:p-8">
             <div className="w-full max-w-7xl bg-white rounded-3xl shadow-xl shadow-zinc-200/50 border border-zinc-200 overflow-hidden flex flex-col min-h-[calc(100vh-8rem)] lg:min-h-[calc(100vh-10rem)]">
@@ -65,21 +70,42 @@ const AISummarize = () => {
                             <p className="text-xs sm:text-sm text-zinc-500 mt-1">Paste long text to get a concise summary.</p>
                         </div>
 
-                        {/* Reset Button */}
-                        <button
-                            onClick={handleReset}
-                            disabled={isSummarizing || (!summarizerInput && !summary)}
-                            className={cn(
-                                "p-2 sm:p-2.5 rounded-xl border transition-all flex items-center gap-1.5 text-xs sm:text-sm font-medium",
-                                (!summarizerInput && !summary) || isSummarizing
-                                    ? "border-zinc-200 text-zinc-400 cursor-not-allowed bg-zinc-50"
-                                    : "border-zinc-200 text-zinc-600 hover:bg-zinc-100 hover:border-zinc-300 active:scale-95"
-                            )}
-                            title="Reset all fields"
-                        >
-                            <RotateCcw className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                            <span className="hidden sm:inline">Reset</span>
-                        </button>
+                        <div className="flex items-center gap-2">
+                            {/* Nút Trích xuất nội dung - MỚI */}
+                            <button
+                                onClick={openTranscriptExtractor}
+                                className="p-2 sm:p-2.5 rounded-xl border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 transition-all flex items-center gap-1.5 text-xs sm:text-sm font-medium active:scale-95"
+                                title="Trích xuất nội dung từ YouTube"
+                            >
+                                <ExternalLink className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                                <span className="hidden sm:inline">Trích xuất nội dung</span>
+                                <span className="sm:hidden">Trích xuất</span>
+                            </button>
+
+                            {/* Reset Button */}
+                            <button
+                                onClick={handleReset}
+                                disabled={isSummarizing || (!summarizerInput && !summary)}
+                                className={cn(
+                                    "p-2 sm:p-2.5 rounded-xl border transition-all flex items-center gap-1.5 text-xs sm:text-sm font-medium",
+                                    (!summarizerInput && !summary) || isSummarizing
+                                        ? "border-zinc-200 text-zinc-400 cursor-not-allowed bg-zinc-50"
+                                        : "border-zinc-200 text-zinc-600 hover:bg-zinc-100 hover:border-zinc-300 active:scale-95"
+                                )}
+                                title="Reset all fields"
+                            >
+                                <RotateCcw className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                                <span className="hidden sm:inline">Reset</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Mô tả thêm về tính năng trích xuất (tùy chọn) */}
+                    <div className="mt-2 text-xs text-indigo-600 bg-indigo-50/50 p-2 rounded-lg border border-indigo-100 flex items-center gap-2">
+                        <ExternalLink className="w-3 h-3 flex-shrink-0" />
+                        <span>
+                            💡 Muốn tóm tắt video YouTube? Click nút <strong>"Trích xuất nội dung"</strong> để lấy transcript, sau đó paste vào đây!
+                        </span>
                     </div>
                 </div>
 
@@ -169,4 +195,4 @@ const AISummarize = () => {
     )
 }
 
-export default AISummarize
+export default AISummarize;
