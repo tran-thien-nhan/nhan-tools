@@ -80,3 +80,7 @@ Hãy phân tích:
 - Mối liên hệ giữa quá khứ và hiện tại
 - Xu hướng phát triển trong tương lai
 - Lời khuyên dựa trên cả 3 lá bài`;
+export const prompt_7 = 
+`
+Tạo hình ảnh chất lượng 2k, kích thước 9:16, full HD
+`;

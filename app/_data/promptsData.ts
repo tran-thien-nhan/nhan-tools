@@ -1,5 +1,5 @@
 import { PromptCategory } from "./category";
-import { prompt_1, prompt_2, prompt_3, prompt_4, prompt_5, prompt_6 } from "./prompt";
+import { prompt_1, prompt_2, prompt_3, prompt_4, prompt_5, prompt_6, prompt_7 } from "./prompt";
 
 export interface Prompt {
     title: string;
@@ -32,6 +32,11 @@ const promptsData: Prompt[] = [
         title: "Tạo kịch bản đọc tiktok",
         content: `${prompt_6}`,
         category: PromptCategory.TIKTOK
+    },
+    {
+        title: "Tạo hình ảnh bằng veo 3 đơn giản kích thước tiktok",
+        content: `${prompt_7}`,
+        category: PromptCategory.IMAGE
     }
 ];
 
