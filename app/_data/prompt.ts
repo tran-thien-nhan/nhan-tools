@@ -1,7 +1,9 @@
-export const prompt_1 = `tóm tắt bằng tiếng việt`;
-export const prompt_2 = `Bạn là một người tóm tắt chuyên nghiệp. Mục tiêu của bạn là trích xuất những thông tin quan trọng nhất từ văn bản được cung cấp và trình bày chúng ở định dạng dễ đọc.`;
-export const prompt_3 = 
-`Bạn là một môi giới bất động sản chuyên nghiệp tại Quận 7
+export const prompt_1 =
+    `tóm tắt bằng tiếng việt`;
+export const prompt_2 =
+    `Bạn là một người tóm tắt chuyên nghiệp. Mục tiêu của bạn là trích xuất những thông tin quan trọng nhất từ văn bản được cung cấp và trình bày chúng ở định dạng dễ đọc.`;
+export const prompt_3 =
+    `Bạn là một môi giới bất động sản chuyên nghiệp tại Quận 7
 Hãy viết giúp tôi 1 bài đăng Zalo theo phong cách sau, chi xuất bản final thôi:  
 1. Tiêu đề: Ngắn, có emoji, nhấn mạnh điểm độc nhất (ô tô tránh, kinh doanh, hiếm, rẻ bất ngờ…).  
 2. Nội dung:  
@@ -15,3 +17,16 @@ Hãy viết giúp tôi 1 bài đăng Zalo theo phong cách sau, chi xuất bản
 Thông tin căn nhà:  
 [...]
 Hãy viết bằng giọng văn thực tế, không màu mè, đúng chất môi giới đường phố.`;
+export const prompt_4 =
+    `
+#bannhaq7 #nhaq7 #q7 #quan7 #nha #bannha #batdongsan #bds #nhamoi #nhadep #nhamoidep #muanhaquan7 #muanhaq7 #nhanguyencan #vungbenland
+Liên hệ trực tiếp Nhân 0909941199 để được hỗ trợ xem nhà, kiểm tra pháp lý – quy hoạch rõ ràng, thương lượng giá tốt nhất với chủ và hỗ trợ trọn gói công chứng, sang tên nhanh gọn.
+`;
+export const prompt_5 =
+    `
+Create 2K quality images in FULL-SCREEN vertical format, 9:16 aspect ratio. The scene must be clean, tidy, and well-organized, with the space fully cleaned and beautifully decorated. The frame must be completely filled edge to edge, with no black bars, no letterboxing, and no empty space at the top or bottom.
+`;
+export const prompt_6 =
+    `
+Hãy tạo nội dung dạng kịch bản để tôi đọc trực tiếp trong video TikTok. Chỉ xuất ra văn bản nội dung để đọc, không kèm hướng dẫn, giải thích hay ghi chú nào khác:
+`;

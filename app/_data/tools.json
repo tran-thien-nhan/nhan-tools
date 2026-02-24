@@ -46,5 +46,13 @@
         "icon": "Building2",
         "path": "/real-estate-post",
         "color": "amber"
+    },
+    {
+        "id": "prompt-library",
+        "name": "Prompt Library",
+        "description": "Bộ sưu tập các prompt hữu ích cho công việc",
+        "icon": "BookOpen",
+        "path": "/prompt-library",
+        "color": "purple"
     }
 ]
