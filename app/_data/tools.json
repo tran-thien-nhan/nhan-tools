@@ -60,7 +60,7 @@
         "name": "Xem bài Tarot",
         "description": "Xem bói Tarot với trí tuệ nhân tạo",
         "icon": "Moon",
-        "path": "/tarot",
+        "path": "/xem-tarot",
         "color": "purple"
     },
     {
