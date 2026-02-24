@@ -1,31 +1,31 @@
 [
     {
         "id": "home",
-        "name": "Home",
-        "description": "trang chủ",
+        "name": "Trang chủ",
+        "description": "Trang chủ",
         "icon": "Home",
         "path": "/",
         "color": "indigo"
     },
     {
         "id": "code-generator",
-        "name": "Code Generator",
-        "description": "Generate secure random strings",
+        "name": "Tạo mã ngẫu nhiên",
+        "description": "Tạo chuỗi ký tự ngẫu nhiên an toàn",
         "icon": "Binary",
         "path": "/code-gen",
         "color": "indigo"
     },
     {
         "id": "tabata-timer",
-        "name": "Tabata Timer",
-        "description": "High-intensity interval training timer",
+        "name": "Đếm giờ Tabata",
+        "description": "Đồng hồ tập luyện cường độ cao ngắt quãng",
         "icon": "Zap",
         "path": "/tabata-timer",
         "color": "purple"
     },
     {
         "id": "ai-summarizer",
-        "name": "AI Summarizer",
+        "name": "Tóm tắt văn bản AI",
         "description": "Tóm tắt văn bản thông minh bằng AI",
         "icon": "Brain",
         "path": "/ai-summarizer",
@@ -33,7 +33,7 @@
     },
     {
         "id": "seo-tag-generator",
-        "name": "SEO Tag Generator",
+        "name": "Tạo thẻ SEO",
         "description": "Tự động tạo thẻ meta, tiêu đề và từ khóa SEO",
         "icon": "Tag",
         "path": "/seo-tag-generator",
@@ -41,7 +41,7 @@
     },
     {
         "id": "real-estate-post",
-        "name": "Real Estate Post",
+        "name": "Đăng tin BĐS",
         "description": "Tạo tin đăng bất động sản chuyên nghiệp",
         "icon": "Building2",
         "path": "/real-estate-post",
@@ -49,15 +49,15 @@
     },
     {
         "id": "prompt-library",
-        "name": "Prompt Library",
-        "description": "Bộ sưu tập các prompt hữu ích cho công việc",
+        "name": "Thư viện câu lệnh",
+        "description": "Bộ sưu tập các câu lệnh AI hữu ích cho công việc",
         "icon": "BookOpen",
         "path": "/prompt-library",
         "color": "purple"
     },
     {
         "id": "tarot-reader",
-        "name": "Tarot Reader AI",
+        "name": "Xem bài Tarot",
         "description": "Xem bói Tarot với trí tuệ nhân tạo",
         "icon": "Moon",
         "path": "/tarot",
@@ -65,15 +65,15 @@
     },
     {
         "id": "discord-uploader",
-        "name": "Discord Image Uploader",
-        "description": "Upload trực tiếp hình ảnh lên Discord channel",
+        "name": "Tải ảnh lên Discord",
+        "description": "Upload trực tiếp hình ảnh lên kênh Discord",
         "icon": "Upload",
         "path": "/discord-image-uploader",
         "color": "indigo"
     },
     {
         "id": "real-estate-fee-calculator",
-        "name": "Tính Chi Phí BĐS",
+        "name": "Tính chi phí BĐS",
         "description": "Tính thuế trước bạ, phí công chứng, sang tên, môi giới và lãi vay ngân hàng",
         "icon": "Calculator",
         "path": "/real-estate-fee-calculator",
@@ -81,8 +81,8 @@
     },
     {
         "id": "flappy-bird",
-        "name": "Game flappy bird",
-        "description": "Game flappy bird",
+        "name": "Game Flappy Bird",
+        "description": "Trò chơi Flappy Bird giải trí",
         "icon": "Game",
         "path": "/flappy-bird",
         "color": "green"

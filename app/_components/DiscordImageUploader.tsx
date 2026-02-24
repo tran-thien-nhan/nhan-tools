@@ -7,15 +7,14 @@ import {
     Check,
     Copy,
     X,
-    AlertCircle,
     ExternalLink,
     Trash2,
-    MessageSquare,
     Link as LinkIcon,
-    List
+    List,
+    AlertCircle
 } from 'lucide-react';
 import { cn } from '@/app/utils';
-import { DISCORD_WEBHOOK_URL, ALLOWED_FILE_TYPES, MAX_FILE_SIZE } from '@/app/_data/discordConfig';
+import { ALLOWED_FILE_TYPES, MAX_FILE_SIZE } from '@/app/_data/discordConfig';
 
 interface UploadedFile {
     id: string;
@@ -30,12 +29,25 @@ interface UploadedFile {
 const DiscordImageUploader: React.FC = () => {
     const [files, setFiles] = useState<UploadedFile[]>([]);
     const [isDragging, setIsDragging] = useState(false);
-    const [webhookUrl, setWebhookUrl] = useState(DISCORD_WEBHOOK_URL);
-    const [showWebhookInput, setShowWebhookInput] = useState(!DISCORD_WEBHOOK_URL);
     const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
     const [uploadAllStatus, setUploadAllStatus] = useState<'idle' | 'uploading'>('idle');
     const [copiedAllUrls, setCopiedAllUrls] = useState(false);
     const [showUrlList, setShowUrlList] = useState(false);
+    const [webhookError, setWebhookError] = useState<string | null>(null);
+
+    // Lấy webhook URL từ env
+    const webhookUrl = process.env.NEXT_PUBLIC_DISCORD_WEBHOOK_URL;
+
+    // Kiểm tra webhook URL khi component mount
+    React.useEffect(() => {
+        if (!webhookUrl) {
+            setWebhookError('❌ Không tìm thấy DISCORD_WEBHOOK_URL trong file .env.local');
+        } else if (!webhookUrl.startsWith('https://discord.com/api/webhooks/')) {
+            setWebhookError('❌ Webhook URL không hợp lệ. Cần bắt đầu bằng: https://discord.com/api/webhooks/');
+        } else {
+            setWebhookError(null);
+        }
+    }, [webhookUrl]);
 
     // Validate file
     const validateFile = (file: File): { valid: boolean; error?: string } => {
@@ -130,8 +142,7 @@ const DiscordImageUploader: React.FC = () => {
     // Upload single file to Discord
     const uploadToDiscord = async (file: UploadedFile) => {
         if (!webhookUrl) {
-            setShowWebhookInput(true);
-            throw new Error('Vui lòng cấu hình Webhook URL');
+            throw new Error('Webhook URL chưa được cấu hình');
         }
 
         const formData = new FormData();
@@ -148,7 +159,8 @@ const DiscordImageUploader: React.FC = () => {
         });
 
         if (!response.ok) {
-            throw new Error(`Upload thất bại: ${response.statusText}`);
+            const errorText = await response.text();
+            throw new Error(`Upload thất bại (${response.status}): ${errorText}`);
         }
 
         const data = await response.json();
@@ -160,7 +172,7 @@ const DiscordImageUploader: React.FC = () => {
     // Upload all files
     const handleUploadAll = async () => {
         if (!webhookUrl) {
-            setShowWebhookInput(true);
+            setWebhookError('❌ Webhook URL chưa được cấu hình trong file .env.local');
             return;
         }
 
@@ -198,6 +210,7 @@ const DiscordImageUploader: React.FC = () => {
                         : f
                 ));
             } catch (error) {
+                console.error('Upload error:', error);
                 setFiles(prev => prev.map(f =>
                     f.id === file.id
                         ? {
@@ -272,38 +285,36 @@ const DiscordImageUploader: React.FC = () => {
                             </p>
                         </div>
 
-                        {/* Webhook Config Button */}
-                        <button
-                            onClick={() => setShowWebhookInput(!showWebhookInput)}
-                            className={cn(
-                                "p-2 sm:p-2.5 rounded-xl border transition-all flex items-center gap-1.5 text-xs sm:text-sm font-medium",
-                                showWebhookInput
-                                    ? "border-indigo-200 bg-indigo-100 text-indigo-600"
-                                    : "border-indigo-200 text-indigo-600 hover:bg-indigo-100"
-                            )}
-                            title="Cấu hình Webhook"
-                        >
-                            <MessageSquare className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                            <span className="hidden sm:inline">Webhook</span>
-                        </button>
+                        {/* Status indicator */}
+                        <div className="flex items-center gap-2">
+                            <div className={cn(
+                                "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium",
+                                webhookUrl && !webhookError
+                                    ? "bg-green-100 text-green-700"
+                                    : "bg-red-100 text-red-700"
+                            )}>
+                                <div className={cn(
+                                    "w-2 h-2 rounded-full",
+                                    webhookUrl && !webhookError ? "bg-green-500" : "bg-red-500"
+                                )} />
+                                {webhookUrl && !webhookError ? 'Webhook OK' : 'Lỗi webhook'}
+                            </div>
+                        </div>
                     </div>
 
-                    {/* Webhook URL Input */}
-                    {showWebhookInput && (
-                        <div className="mt-4 p-3 bg-white rounded-xl border border-indigo-200">
-                            <label className="text-xs font-semibold text-indigo-700 uppercase tracking-wider block mb-2">
-                                Discord Webhook URL
-                            </label>
-                            <input
-                                type="url"
-                                value={webhookUrl}
-                                onChange={(e) => setWebhookUrl(e.target.value)}
-                                placeholder="https://discord.com/api/webhooks/..."
-                                className="w-full px-3 py-2 bg-indigo-50/50 border border-indigo-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
-                            />
-                            <p className="text-xs text-indigo-500 mt-2">
-                                ⚡ Tạo webhook trong Discord: Channel Settings → Integrations → Webhooks
-                            </p>
+                    {/* Webhook Error Message */}
+                    {webhookError && (
+                        <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2">
+                            <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
+                            <div className="text-xs text-red-700">
+                                <p className="font-medium">{webhookError}</p>
+                                <p className="mt-1 text-red-600">
+                                    Vui lòng thêm dòng sau vào file <code className="bg-red-100 px-1 py-0.5 rounded">.env.local</code>:
+                                </p>
+                                <pre className="mt-2 p-2 bg-red-100 rounded-lg text-red-800 font-mono text-xs overflow-x-auto">
+                                    NEXT_PUBLIC_DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/...
+                                </pre>
+                            </div>
                         </div>
                     )}
                 </div>
@@ -316,12 +327,14 @@ const DiscordImageUploader: React.FC = () => {
                             onDrop={handleDrop}
                             onDragOver={handleDragOver}
                             onDragLeave={handleDragLeave}
-                            onClick={() => document.getElementById('file-input')?.click()}
+                            onClick={() => !webhookError && document.getElementById('file-input')?.click()}
                             className={cn(
                                 "relative border-2 border-dashed rounded-xl sm:rounded-2xl p-8 sm:p-12 transition-all cursor-pointer",
                                 isDragging
                                     ? "border-indigo-500 bg-indigo-50"
-                                    : "border-indigo-200 hover:border-indigo-300 hover:bg-indigo-50/50"
+                                    : webhookError
+                                        ? "border-red-200 bg-red-50/50 cursor-not-allowed"
+                                        : "border-indigo-200 hover:border-indigo-300 hover:bg-indigo-50/50"
                             )}
                         >
                             <input
@@ -331,21 +344,35 @@ const DiscordImageUploader: React.FC = () => {
                                 accept={ALLOWED_FILE_TYPES.join(',')}
                                 className="hidden"
                                 onChange={(e) => handleFiles(e.target.files)}
+                                disabled={!!webhookError}
                             />
 
                             <div className="text-center">
-                                <div className="inline-flex p-4 bg-indigo-100 rounded-full mb-4">
-                                    <ImageIcon className="w-8 h-8 text-indigo-600" />
+                                <div className={cn(
+                                    "inline-flex p-4 rounded-full mb-4",
+                                    webhookError ? "bg-red-100" : "bg-indigo-100"
+                                )}>
+                                    <ImageIcon className={cn(
+                                        "w-8 h-8",
+                                        webhookError ? "text-red-600" : "text-indigo-600"
+                                    )} />
                                 </div>
                                 <h3 className="text-lg font-semibold text-indigo-900 mb-2">
-                                    {isDragging ? 'Thả file để upload' : 'Kéo thả hoặc click để chọn ảnh'}
+                                    {webhookError
+                                        ? 'Vui lòng cấu hình webhook trước'
+                                        : isDragging
+                                            ? 'Thả file để upload'
+                                            : 'Kéo thả hoặc click để chọn ảnh'
+                                    }
                                 </h3>
                                 <p className="text-sm text-indigo-600 mb-4">
                                     Hỗ trợ: JPG, PNG, GIF, WEBP (tối đa 8MB)
                                 </p>
-                                <button className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors">
-                                    Chọn file
-                                </button>
+                                {!webhookError && (
+                                    <button className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors">
+                                        Chọn file
+                                    </button>
+                                )}
                             </div>
                         </div>
 
@@ -482,10 +509,10 @@ const DiscordImageUploader: React.FC = () => {
                                 </div>
 
                                 {/* Upload All Button */}
-                                {counts.pending > 0 && (
+                                {counts.pending > 0 && !webhookError && (
                                     <button
                                         onClick={handleUploadAll}
-                                        disabled={uploadAllStatus === 'uploading' || !webhookUrl}
+                                        disabled={uploadAllStatus === 'uploading'}
                                         className="w-full py-3 sm:py-4 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 text-white font-bold rounded-xl sm:rounded-2xl shadow-lg shadow-indigo-200 transition-all active:scale-[0.98] flex items-center justify-center gap-2 group text-sm sm:text-base"
                                     >
                                         {uploadAllStatus === 'uploading' ? (
@@ -499,7 +526,7 @@ const DiscordImageUploader: React.FC = () => {
                                     </button>
                                 )}
 
-                                {/* PHẦN MỚI: Danh sách URLs dạng text */}
+                                {/* URLs List */}
                                 {successfulUrls.length > 0 && (
                                     <div className="mt-6 space-y-3">
                                         <div className="flex items-center justify-between">
@@ -554,7 +581,7 @@ const DiscordImageUploader: React.FC = () => {
                         )}
 
                         {/* Empty State */}
-                        {files.length === 0 && (
+                        {files.length === 0 && !webhookError && (
                             <div className="text-center py-12">
                                 <ImageIcon className="w-16 h-16 text-indigo-300 mx-auto mb-4" />
                                 <p className="text-indigo-500">Chưa có ảnh nào được chọn</p>
