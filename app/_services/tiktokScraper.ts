@@ -178,11 +178,9 @@ class TikTokScraper {
     }
 
     private async downloadVideos(videos: TikTokVideo[], channel: TikTokChannel) {
-        // Sửa đường dẫn tải về thành C:\Users\judyh\Downloads
         const downloadDir = `C:\\Users\\judyh\\Downloads\\tiktok_${channel.username.replace('@', '')}`;
 
         try {
-            // Tạo thư mục riêng cho từng channel trong Downloads
             await fs.mkdir(downloadDir, { recursive: true });
             console.log(`📁 Download directory: ${downloadDir}`);
         } catch (error) {
@@ -196,58 +194,42 @@ class TikTokScraper {
             try {
                 console.log(`⬇️ Downloading video ${i + 1}/${videos.length} (ID: ${video.id})...`);
 
-                // Sử dụng API không chính thức để lấy URL video
                 const apiUrl = `https://www.tikwm.com/api/?url=${encodeURIComponent(video.url)}`;
 
-                console.log(`🔍 Fetching from API: ${apiUrl}`);
-
                 const response = await fetch(apiUrl, {
-                    headers: {
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-                    }
+                    headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' }
                 });
 
                 const data = await response.json() as any;
 
                 if (data.code === 0 && data.data) {
-                    // Lấy URL video (ưu tiên quality cao nhất)
                     const videoUrl = data.data.play || data.data.wmplay || data.data.hdplay;
 
                     if (videoUrl) {
-                        // Tạo tên file: username_ngaythang_videoID.mp4
                         const date = new Date().toISOString().split('T')[0];
                         const fileName = `${channel.username.replace('@', '')}_${date}_${video.id}.mp4`;
                         const filePath = path.join(downloadDir, fileName);
 
-                        console.log(`📥 Downloading from: ${videoUrl}`);
-
-                        // Tải video
                         await this.downloadFile(videoUrl, filePath);
 
                         video.downloaded = true;
                         video.downloadPath = filePath;
+                        video.caption = data.data.title || '';
 
                         console.log(`✅ Downloaded: ${fileName} (${(data.data.size || 0)} bytes)`);
 
-                        // Hiển thị thông tin thêm nếu có
-                        if (data.data.title) {
-                            console.log(`   Title: ${data.data.title}`);
-                        }
-                        if (data.data.duration) {
-                            console.log(`   Duration: ${data.data.duration}s`);
-                        }
                     } else {
-                        console.log(`⚠️ No video URL found in API response for video ${video.id}`);
+                        console.log(`⚠️ No video URL found for video ${video.id}`);
                     }
                 } else {
-                    console.log(`⚠️ API returned error for video ${video.id}:`, data.msg || 'Unknown error');
+                    console.log(`⚠️ API error:`, data.msg || 'Unknown error');
                 }
 
-                // Delay giữa các lần download để tránh bị chặn
+                // Delay giữa các video
                 await new Promise(resolve => setTimeout(resolve, 3000));
 
             } catch (error) {
-                console.error(`❌ Failed to download video ${video.id}:`, error);
+                console.error(`❌ Failed to process video ${video.id}:`, error);
             }
         }
     }
@@ -265,7 +247,6 @@ class TikTokScraper {
             };
 
             const request = https.get(url, options, (response) => {
-                // Xử lý redirect
                 if (response.statusCode === 302 || response.statusCode === 301) {
                     const location = response.headers.location;
                     if (location) {
@@ -275,13 +256,11 @@ class TikTokScraper {
                     return;
                 }
 
-                // Kiểm tra response OK
                 if (response.statusCode !== 200) {
                     reject(new Error(`Failed to download: HTTP ${response.statusCode}`));
                     return;
                 }
 
-                // Log tiến trình download
                 const totalSize = parseInt(response.headers['content-length'] || '0');
                 let downloadedSize = 0;
 
@@ -296,7 +275,7 @@ class TikTokScraper {
                 response.pipe(file);
 
                 file.on('finish', () => {
-                    console.log(''); // New line after progress
+                    console.log('');
                     file.close();
                     resolve();
                 });
@@ -307,7 +286,6 @@ class TikTokScraper {
                 reject(err);
             });
 
-            // Timeout sau 60 giây
             request.setTimeout(60000, () => {
                 request.destroy();
                 reject(new Error('Download timeout'));

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs/promises';
 import path from 'path';
 import TikTokScraper, { TikTokChannel } from '@/app/_services/tiktokScraper';
+import defaultConfig from '@/app/_data/channels.json';
 
 // Cache cho scraper instance
 let scraperInstance: TikTokScraper | null = null;
@@ -15,39 +16,16 @@ async function getConfig() {
         const data = await fs.readFile(configPath, 'utf-8');
         return JSON.parse(data);
     } catch (error) {
-        // Nếu file không tồn tại, tạo file mới với config mặc định
-        const defaultConfig = {
-            channels: [
-                {
-                    id: "1",
-                    username: "@phuongnhanhieu",
-                    displayName: "phuongnhanhieu",
-                    url: "https://www.tiktok.com/@phuongnhanhieu",
-                    enabled: true,
-                    lastScraped: null
-                },
-                {
-                    id: "2",
-                    username: "@trambannha",
-                    displayName: "trambannha",
-                    url: "https://www.tiktok.com/@trambannha",
-                    enabled: true,
-                    lastScraped: null
-                }
-            ],
-            settings: {
-                downloadPath: "./downloads",
-                maxVideosPerChannel: 10,
-                headless: true,
-                scrapeInterval: 3600000
-            }
-        };
+        // Nếu file không tồn tại, dùng config mặc định từ import
+        console.log('⚠️ File channels.json không tồn tại, dùng config mặc định');
 
         // Tạo thư mục nếu chưa tồn tại
         await fs.mkdir(path.dirname(configPath), { recursive: true });
 
         // Ghi file config mặc định
         await fs.writeFile(configPath, JSON.stringify(defaultConfig, null, 2));
+
+        console.log('✅ Đã tạo file channels.json với config mặc định');
 
         return defaultConfig;
     }
@@ -65,7 +43,8 @@ export async function GET(req: NextRequest) {
             case 'channels':
                 return NextResponse.json({
                     success: true,
-                    channels: configData.channels
+                    channels: configData.channels,
+                    settings: configData.settings
                 });
 
             case 'scrape': {

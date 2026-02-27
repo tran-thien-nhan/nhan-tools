@@ -1,4 +1,3 @@
-// components/TikTokScraper.tsx
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -77,6 +76,10 @@ const TikTokScraper = () => {
             const data = await response.json();
             if (data.success) {
                 setChannels(data.channels);
+                // Load settings từ response
+                if (data.settings) {
+                    setSettings(data.settings);
+                }
             }
         } catch (error) {
             console.error('Error loading channels:', error);
