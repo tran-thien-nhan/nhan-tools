@@ -1,4 +1,4 @@
-import puppeteer, { Browser, Page } from 'puppeteer';
+// app/_services/tiktokScraper.ts
 import fs from 'fs/promises';
 import path from 'path';
 import https from 'https';
@@ -37,7 +37,6 @@ export interface ScraperConfig {
 }
 
 class TikTokScraper {
-    private browser: Browser | null = null;
     private config: ScraperConfig;
     private channels: TikTokChannel[] = [];
 
@@ -47,138 +46,72 @@ class TikTokScraper {
     }
 
     async initialize() {
-        try {
-            // Tạo thư mục downloads nếu chưa tồn tại
-            await fs.mkdir(this.config.downloadPath, { recursive: true });
-
-            // Khởi tạo browser với cấu hình phù hợp
-            this.browser = await puppeteer.launch({
-                headless: this.config.headless,
-                args: [
-                    '--no-sandbox',
-                    '--disable-setuid-sandbox',
-                    '--disable-web-security',
-                    '--disable-features=IsolateOrigins,site-per-process',
-                    '--disable-blink-features=AutomationControlled',
-                    '--window-size=1920,1080',
-                    '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-                ],
-                defaultViewport: null
-            });
-
-            console.log('✅ Browser initialized');
-        } catch (error) {
-            console.error('❌ Failed to initialize browser:', error);
-            throw error;
-        }
+        // Không cần khởi tạo browser
+        console.log('✅ TikTokScraper initialized (API mode)');
     }
 
     async close() {
-        if (this.browser) {
-            await this.browser.close();
-            console.log('✅ Browser closed');
-        }
+        // Không cần đóng browser
+        console.log('✅ TikTokScraper closed');
     }
 
     async scrapeChannel(channel: TikTokChannel): Promise<TikTokVideo[]> {
-        if (!this.browser) throw new Error('Browser not initialized');
-
-        const page = await this.browser.newPage();
-        let videos: TikTokVideo[] = [];
+        console.log(`📹 Scraping channel: ${channel.username} using API`);
 
         try {
-            console.log(`📹 Scraping channel: ${channel.username}`);
+            // Dùng API TikTok không chính thức
+            const apiUrl = `https://www.tikwm.com/api/user/posts?unique_id=${channel.username.replace('@', '')}&count=${this.config.maxVideosPerChannel}`;
 
-            // Thiết lập các headers để tránh bị phát hiện là bot
-            await page.setExtraHTTPHeaders({
-                'Accept-Language': 'en-US,en;q=0.9,vi;q=0.8',
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-                'Referer': 'https://www.tiktok.com/',
-                'DNT': '1'
+            const response = await fetch(apiUrl, {
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                }
             });
 
-            // Điều hướng đến trang channel
-            console.log(`Navigating to ${channel.url}`);
-            await page.goto(channel.url, {
-                waitUntil: 'networkidle2',
-                timeout: 60000
-            });
+            if (!response.ok) {
+                throw new Error(`API error: ${response.status}`);
+            }
 
-            // Đợi page load cơ bản
-            await page.waitForFunction(() => {
-                return document.readyState === 'complete';
-            }, { timeout: 30000 });
+            const data = await response.json();
 
-            // Scroll để load content
-            await this.autoScroll(page, 3);
+            if (data.code !== 0 || !data.data || !data.data.videos) {
+                console.log('⚠️ No videos found or API error');
+                return [];
+            }
 
-            // Lấy danh sách video URLs từ page
-            const videoUrls = await page.evaluate((maxVideos) => {
-                const urls: string[] = [];
-                const links = document.querySelectorAll('a[href*="/video/"]');
+            const videos: TikTokVideo[] = data.data.videos.map((video: any) => ({
+                id: video.video_id,
+                url: `https://www.tiktok.com/@${channel.username.replace('@', '')}/video/${video.video_id}`,
+                downloadUrl: video.play || video.wmplay || video.hdplay || '',
+                caption: video.title || '',
+                likes: video.digg_count || 0,
+                comments: video.comment_count || 0,
+                shares: video.share_count || 0,
+                plays: video.play_count || 0,
+                duration: video.duration || 0,
+                createTime: new Date(video.create_time * 1000),
+                author: channel.username,
+                downloaded: false
+            }));
 
-                links.forEach((link) => {
-                    if (urls.length >= maxVideos) return;
-                    const href = link.getAttribute('href');
-                    if (href) {
-                        const fullUrl = href.startsWith('http') ? href : `https://www.tiktok.com${href}`;
-                        if (!urls.includes(fullUrl)) {
-                            urls.push(fullUrl);
-                        }
-                    }
-                });
+            console.log(`✅ Found ${videos.length} videos from ${channel.username}`);
 
-                return urls;
-            }, this.config.maxVideosPerChannel);
-
-            console.log(`✅ Found ${videoUrls.length} video URLs`);
-
-            // Tạo video objects
-            videos = videoUrls.map(url => {
-                const videoId = url.split('/video/')[1]?.split('?')[0] || '';
-                return {
-                    id: videoId,
-                    url: url,
-                    downloadUrl: '',
-                    caption: '',
-                    likes: 0,
-                    comments: 0,
-                    shares: 0,
-                    plays: 0,
-                    duration: 0,
-                    createTime: new Date(),
-                    author: channel.username,
-                    downloaded: false
-                };
-            });
-
-            // Tải video về sử dụng API
+            // Tải video về nếu cần
             if (videos.length > 0) {
                 console.log(`⬇️ Starting download of ${videos.length} videos...`);
                 await this.downloadVideos(videos, channel);
-                console.log(`✅ Downloaded ${videos.filter(v => v.downloaded).length} videos to ${this.config.downloadPath}`);
             }
+
+            return videos;
 
         } catch (error) {
             console.error(`❌ Error scraping channel ${channel.username}:`, error);
-        } finally {
-            await page.close();
-        }
-
-        return videos;
-    }
-
-    private async autoScroll(page: Page, maxScrolls: number = 3) {
-        for (let i = 0; i < maxScrolls; i++) {
-            await page.evaluate(() => {
-                window.scrollTo(0, document.documentElement.scrollHeight);
-            });
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            return [];
         }
     }
 
     private async downloadVideos(videos: TikTokVideo[], channel: TikTokChannel) {
-        const downloadDir = `C:\\Users\\judyh\\Downloads\\tiktok_${channel.username.replace('@', '')}`;
+        const downloadDir = path.join(process.cwd(), 'public', 'downloads', channel.username.replace('@', ''));
 
         try {
             await fs.mkdir(downloadDir, { recursive: true });
@@ -194,42 +127,27 @@ class TikTokScraper {
             try {
                 console.log(`⬇️ Downloading video ${i + 1}/${videos.length} (ID: ${video.id})...`);
 
-                const apiUrl = `https://www.tikwm.com/api/?url=${encodeURIComponent(video.url)}`;
-
-                const response = await fetch(apiUrl, {
-                    headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' }
-                });
-
-                const data = await response.json() as any;
-
-                if (data.code === 0 && data.data) {
-                    const videoUrl = data.data.play || data.data.wmplay || data.data.hdplay;
-
-                    if (videoUrl) {
-                        const date = new Date().toISOString().split('T')[0];
-                        const fileName = `${channel.username.replace('@', '')}_${date}_${video.id}.mp4`;
-                        const filePath = path.join(downloadDir, fileName);
-
-                        await this.downloadFile(videoUrl, filePath);
-
-                        video.downloaded = true;
-                        video.downloadPath = filePath;
-                        video.caption = data.data.title || '';
-
-                        console.log(`✅ Downloaded: ${fileName} (${(data.data.size || 0)} bytes)`);
-
-                    } else {
-                        console.log(`⚠️ No video URL found for video ${video.id}`);
-                    }
-                } else {
-                    console.log(`⚠️ API error:`, data.msg || 'Unknown error');
+                if (!video.downloadUrl) {
+                    console.log(`⚠️ No download URL for video ${video.id}`);
+                    continue;
                 }
 
-                // Delay giữa các video
-                await new Promise(resolve => setTimeout(resolve, 3000));
+                const date = new Date().toISOString().split('T')[0];
+                const fileName = `${channel.username.replace('@', '')}_${date}_${video.id}.mp4`;
+                const filePath = path.join(downloadDir, fileName);
+
+                await this.downloadFile(video.downloadUrl, filePath);
+
+                video.downloaded = true;
+                video.downloadPath = `/downloads/${channel.username.replace('@', '')}/${fileName}`;
+
+                console.log(`✅ Downloaded: ${fileName}`);
+
+                // Delay giữa các lần download
+                await new Promise(resolve => setTimeout(resolve, 2000));
 
             } catch (error) {
-                console.error(`❌ Failed to process video ${video.id}:`, error);
+                console.error(`❌ Failed to download video ${video.id}:`, error);
             }
         }
     }
@@ -240,17 +158,14 @@ class TikTokScraper {
 
             const options = {
                 headers: {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                    'Referer': 'https://www.tiktok.com/',
-                    'Accept': '*/*'
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
                 }
             };
 
-            const request = https.get(url, options, (response) => {
+            https.get(url, options, (response) => {
                 if (response.statusCode === 302 || response.statusCode === 301) {
                     const location = response.headers.location;
                     if (location) {
-                        console.log(`🔄 Redirecting to: ${location}`);
                         this.downloadFile(location, dest).then(resolve).catch(reject);
                     }
                     return;
@@ -279,16 +194,9 @@ class TikTokScraper {
                     file.close();
                     resolve();
                 });
-            });
-
-            request.on('error', (err) => {
+            }).on('error', (err) => {
                 fs.unlink(dest).catch(() => { });
                 reject(err);
-            });
-
-            request.setTimeout(60000, () => {
-                request.destroy();
-                reject(new Error('Download timeout'));
             });
         });
     }
@@ -302,7 +210,7 @@ class TikTokScraper {
                 results.set(channel.id, videos);
                 channel.lastScraped = new Date();
                 await this.saveChannels();
-                await new Promise(resolve => setTimeout(resolve, 5000));
+                await new Promise(resolve => setTimeout(resolve, 2000));
             }
         }
 
