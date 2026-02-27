@@ -46,12 +46,10 @@ class TikTokScraper {
     }
 
     async initialize() {
-        // Không cần khởi tạo browser
-        console.log('✅ TikTokScraper initialized (API mode)');
+        console.log('✅ TikTokScraper initialized');
     }
 
     async close() {
-        // Không cần đóng browser
         console.log('✅ TikTokScraper closed');
     }
 
@@ -59,8 +57,11 @@ class TikTokScraper {
         console.log(`📹 Scraping channel: ${channel.username} using API`);
 
         try {
-            // Dùng API TikTok không chính thức
-            const apiUrl = `https://www.tikwm.com/api/user/posts?unique_id=${channel.username.replace('@', '')}&count=${this.config.maxVideosPerChannel}`;
+            // Cách 1: Dùng API chính
+            const username = channel.username.replace('@', '');
+            const apiUrl = `https://www.tikwm.com/api/user/posts?unique_id=${username}&count=${this.config.maxVideosPerChannel}`;
+
+            console.log(`🔍 Fetching: ${apiUrl}`);
 
             const response = await fetch(apiUrl, {
                 headers: {
@@ -74,14 +75,69 @@ class TikTokScraper {
 
             const data = await response.json();
 
-            if (data.code !== 0 || !data.data || !data.data.videos) {
-                console.log('⚠️ No videos found or API error');
-                return [];
+            if (data.code === 0 && data.data && data.data.videos) {
+                // API thành công
+                const videos: TikTokVideo[] = data.data.videos.map((video: any) => ({
+                    id: video.video_id,
+                    url: `https://www.tiktok.com/@${username}/video/${video.video_id}`,
+                    downloadUrl: video.play || video.wmplay || video.hdplay || '',
+                    caption: video.title || '',
+                    likes: video.digg_count || 0,
+                    comments: video.comment_count || 0,
+                    shares: video.share_count || 0,
+                    plays: video.play_count || 0,
+                    duration: video.duration || 0,
+                    createTime: new Date(video.create_time * 1000),
+                    author: channel.username,
+                    downloaded: false
+                }));
+
+                console.log(`✅ Found ${videos.length} videos from ${channel.username}`);
+
+                // Tải video về
+                if (videos.length > 0) {
+                    await this.downloadVideos(videos, channel);
+                }
+
+                return videos;
+            } else {
+                // API thất bại, thử cách 2
+                console.log('⚠️ API failed, trying alternative method...');
+                return await this.scrapeChannelAlternative(channel);
             }
 
+        } catch (error) {
+            console.error(`❌ Error scraping channel ${channel.username}:`, error);
+
+            // Thử cách dự phòng
+            try {
+                return await this.scrapeChannelAlternative(channel);
+            } catch (fallbackError) {
+                console.error('❌ Fallback also failed:', fallbackError);
+                return [];
+            }
+        }
+    }
+
+    // Phương thức dự phòng
+    private async scrapeChannelAlternative(channel: TikTokChannel): Promise<TikTokVideo[]> {
+        const username = channel.username.replace('@', '');
+        const apiUrl = `https://www.tikwm.com/api/?url=https://www.tiktok.com/@${username}`;
+
+        console.log(`🔍 Trying alternative API: ${apiUrl}`);
+
+        const response = await fetch(apiUrl, {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.code === 0 && data.data && data.data.videos) {
             const videos: TikTokVideo[] = data.data.videos.map((video: any) => ({
                 id: video.video_id,
-                url: `https://www.tiktok.com/@${channel.username.replace('@', '')}/video/${video.video_id}`,
+                url: `https://www.tiktok.com/@${username}/video/${video.video_id}`,
                 downloadUrl: video.play || video.wmplay || video.hdplay || '',
                 caption: video.title || '',
                 likes: video.digg_count || 0,
@@ -94,23 +150,20 @@ class TikTokScraper {
                 downloaded: false
             }));
 
-            console.log(`✅ Found ${videos.length} videos from ${channel.username}`);
+            console.log(`✅ Found ${videos.length} videos via alternative API`);
 
-            // Tải video về nếu cần
             if (videos.length > 0) {
-                console.log(`⬇️ Starting download of ${videos.length} videos...`);
                 await this.downloadVideos(videos, channel);
             }
 
             return videos;
-
-        } catch (error) {
-            console.error(`❌ Error scraping channel ${channel.username}:`, error);
-            return [];
         }
+
+        return [];
     }
 
     private async downloadVideos(videos: TikTokVideo[], channel: TikTokChannel) {
+        // Tạo thư mục downloads trong public
         const downloadDir = path.join(process.cwd(), 'public', 'downloads', channel.username.replace('@', ''));
 
         try {

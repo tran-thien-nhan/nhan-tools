@@ -27,7 +27,7 @@
   ],
   "settings": {
     "downloadPath": "./public/downloads",
-    "maxVideosPerChannel": 10,
+    "maxVideosPerChannel": 3,
     "headless": true,
     "scrapeInterval": 3600000
   }
