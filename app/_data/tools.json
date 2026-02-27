@@ -94,5 +94,13 @@
         "icon": "Video",
         "path": "/tiktok-scraper",
         "color": "purple"
+    },
+    {
+        "id": "notes-app",
+        "name": "Ghi chú",
+        "description": "Ghi chú nhanh, đồng bộ, gửi lên Discord",
+        "icon": "StickyNote",
+        "path": "/notes-app",
+        "color": "amber"
     }
 ]
