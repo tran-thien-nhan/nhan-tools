@@ -11,7 +11,7 @@ const promptsData: Prompt[] = [
     {
         title: "CTA trong tin đăng BĐS",
         content: `${prompt_4}`,
-        category: PromptCategory.SEO
+        category: PromptCategory.BĐS
     },
     {
         title: "Tóm tắt video YouTube",

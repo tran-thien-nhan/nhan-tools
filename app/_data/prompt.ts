@@ -84,3 +84,14 @@ export const prompt_7 =
 `
 Tạo hình ảnh chất lượng 2k, kích thước 9:16, full HD
 `;
+
+export const prompt_8 = 
+`
+#bannhaq4 #nhaq4 #q4 #quan4 #nha #bannha #batdongsan #bds #nhamoi #nhadep #nhamoidep #muanhaquan4 #muanhaq4 #nhanguyencan #vungbenland
+Liên hệ trực tiếp Nhân 0909941199 để được hỗ trợ xem nhà, kiểm tra pháp lý – quy hoạch rõ ràng, thương lượng giá tốt nhất với chủ và hỗ trợ trọn gói công chứng, sang tên nhanh gọn.
+`;
+export const prompt_9 = 
+`
+#bannhanhabe #nhanhabe #nhabe #nhàbè #nha #bannha #batdongsan #bds #nhamoi #nhadep #nhamoidep #muanhahabenh #muanhanhabe #nhanguyencan #vungbenland
+Liên hệ trực tiếp Nhân 0909941199 để được hỗ trợ xem nhà, kiểm tra pháp lý – quy hoạch rõ ràng, thương lượng giá tốt nhất với chủ và hỗ trợ trọn gói công chứng, sang tên nhanh gọn.
+`;
