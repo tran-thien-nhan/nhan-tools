@@ -4,16 +4,29 @@ import path from 'path';
 import TikTokScraper, { TikTokChannel } from '@/app/_services/tiktokScraper';
 import defaultConfig from '@/app/_data/channels.json';
 
+// Cache cho scraper instance
+let scraperInstance: TikTokScraper | null = null;
+
+// Hàm kiểm tra và tạo file config nếu chưa tồn tại
 async function getConfig() {
     const configPath = path.join(process.cwd(), 'app', '_data', 'channels.json');
 
     try {
+        // Thử đọc file
         const data = await fs.readFile(configPath, 'utf-8');
         return JSON.parse(data);
     } catch (error) {
+        // Nếu file không tồn tại, dùng config mặc định từ import
         console.log('⚠️ File channels.json không tồn tại, dùng config mặc định');
+
+        // Tạo thư mục nếu chưa tồn tại
         await fs.mkdir(path.dirname(configPath), { recursive: true });
+
+        // Ghi file config mặc định
         await fs.writeFile(configPath, JSON.stringify(defaultConfig, null, 2));
+
+        console.log('✅ Đã tạo file channels.json với config mặc định');
+
         return defaultConfig;
     }
 }
@@ -23,6 +36,7 @@ export async function GET(req: NextRequest) {
         const { searchParams } = new URL(req.url);
         const action = searchParams.get('action');
 
+        // Đọc config từ file
         const configData = await getConfig();
 
         switch (action) {
@@ -124,7 +138,10 @@ export async function POST(req: NextRequest) {
                 );
         }
 
+        // Đảm bảo thư mục tồn tại trước khi ghi
         await fs.mkdir(path.dirname(configPath), { recursive: true });
+
+        // Ghi file
         await fs.writeFile(configPath, JSON.stringify(configData, null, 2));
 
         return NextResponse.json({
