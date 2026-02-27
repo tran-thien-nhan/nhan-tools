@@ -1,0 +1,26 @@
+{
+    "channels": [
+        {
+            "id": "1",
+            "username": "@phuongnhanhieu",
+            "displayName": "phuongnhanhieu",
+            "url": "https://www.tiktok.com/@phuongnhanhieu",
+            "enabled": true,
+            "lastScraped": null
+        },
+        {
+            "id": "2",
+            "username": "@trambannha",
+            "displayName": "trambannha",
+            "url": "https://www.tiktok.com/@trambannha",
+            "enabled": true,
+            "lastScraped": null
+        }
+    ],
+    "settings": {
+        "downloadPath": "./public/downloads",
+        "maxVideosPerChannel": 10,
+        "headless": true,
+        "scrapeInterval": 3600000
+    }
+}

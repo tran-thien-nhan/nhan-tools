@@ -56,8 +56,8 @@ CÂU HỎI CỦA NGƯỜI XEM: "{question}"
 
 Hãy đưa ra lời giải thích chi tiết, liên hệ với câu hỏi của người xem.`;
 
-export const THREE_CARDS_PROMPT = 
-`Hãy giải mã 3 lá bài Tarot theo trải bài Quá Khứ - Hiện Tại - Tương Lai:
+export const THREE_CARDS_PROMPT =
+    `Hãy giải mã 3 lá bài Tarot theo trải bài Quá Khứ - Hiện Tại - Tương Lai:
 
 1. LÁ BÀI QUÁ KHỨ:
    - Tên: {pastName}
@@ -80,18 +80,71 @@ Hãy phân tích:
 - Mối liên hệ giữa quá khứ và hiện tại
 - Xu hướng phát triển trong tương lai
 - Lời khuyên dựa trên cả 3 lá bài`;
-export const prompt_7 = 
-`
+export const prompt_7 =
+    `
 Tạo hình ảnh chất lượng 2k, kích thước 9:16, full HD
 `;
 
-export const prompt_8 = 
-`
+export const prompt_8 =
+    `
 #bannhaq4 #nhaq4 #q4 #quan4 #nha #bannha #batdongsan #bds #nhamoi #nhadep #nhamoidep #muanhaquan4 #muanhaq4 #nhanguyencan #vungbenland
 Liên hệ trực tiếp Nhân 0909941199 để được hỗ trợ xem nhà, kiểm tra pháp lý – quy hoạch rõ ràng, thương lượng giá tốt nhất với chủ và hỗ trợ trọn gói công chứng, sang tên nhanh gọn.
 `;
-export const prompt_9 = 
-`
+export const prompt_9 =
+    `
 #bannhanhabe #nhanhabe #nhabe #nhàbè #nha #bannha #batdongsan #bds #nhamoi #nhadep #nhamoidep #muanhahabenh #muanhanhabe #nhanguyencan #vungbenland
+Liên hệ trực tiếp Nhân 0909941199 để được hỗ trợ xem nhà, kiểm tra pháp lý – quy hoạch rõ ràng, thương lượng giá tốt nhất với chủ và hỗ trợ trọn gói công chứng, sang tên nhanh gọn.
+`;
+// Prompt cho Quận 1
+export const prompt_10 =
+    `
+#bannhaquan1 #nhaquan1 #quan1 #q1 #quận1 #nha #bannha #batdongsan #bds #nhamoi #nhadep #nhamoidep #muanhaquan1 #muanaquan1 #muanhaq1 #nhanguyencan #vungbenland #trungtamthanhpho #trungtamquan1
+Liên hệ trực tiếp Nhân 0909941199 để được hỗ trợ xem nhà, kiểm tra pháp lý – quy hoạch rõ ràng, thương lượng giá tốt nhất với chủ và hỗ trợ trọn gói công chứng, sang tên nhanh gọn.
+`;
+
+// Prompt cho Quận 3
+export const prompt_11 =
+    `
+#bannhaquan3 #nhaquan3 #quan3 #q3 #quận3 #nha #bannha #batdongsan #bds #nhamoi #nhadep #nhamoidep #muanhaquan3 #muanaquan3 #muanhaq3 #nhanguyencan #vungbenland #trungtamquan3 #trungtamsaigon
+Liên hệ trực tiếp Nhân 0909941199 để được hỗ trợ xem nhà, kiểm tra pháp lý – quy hoạch rõ ràng, thương lượng giá tốt nhất với chủ và hỗ trợ trọn gói công chứng, sang tên nhanh gọn.
+`;
+
+// Prompt cho Quận Phú Nhuận
+export const prompt_12 =
+    `
+#bannhaphunhuan #nhaphunhuan #phunhuan #pn #quanphunhuan #quậnphú nhuận #nha #bannha #batdongsan #bds #nhamoi #nhadep #nhamoidep #muanhaphunhuan #muanaquanphunhuan #nhanguyencan #vungbenland #phunhuan #sanbaytansonthat
+Liên hệ trực tiếp Nhân 0909941199 để được hỗ trợ xem nhà, kiểm tra pháp lý – quy hoạch rõ ràng, thương lượng giá tốt nhất với chủ và hỗ trợ trọn gói công chứng, sang tên nhanh gọn.
+`;
+
+// Prompt cho Quận Bình Thạnh
+export const prompt_13 =
+    `
+#bannhabinhthanh #nhabinhthanh #binhthanh #bt #quanbinhthanh #quậnbìnhthạnh #nha #bannha #batdongsan #bds #nhamoi #nhadep #nhamoidep #muanhabinhthanh #muanaquanbinhthanh #nhanguyencan #vungbenland #binhthanh #landmark81 #vingrandpark
+Liên hệ trực tiếp Nhân 0909941199 để được hỗ trợ xem nhà, kiểm tra pháp lý – quy hoạch rõ ràng, thương lượng giá tốt nhất với chủ và hỗ trợ trọn gói công chứng, sang tên nhanh gọn.
+`;
+// Prompt cho Quận 10
+export const prompt_14 =
+    `
+#bannhaquan10 #nhaquan10 #quan10 #q10 #quận10 #nha #bannha #batdongsan #bds #nhamoi #nhadep #nhamoidep #muanhaquan10 #muanaquan10 #muanhaq10 #nhanguyencan #vungbenland #quan10 #trungtamquan10
+Liên hệ trực tiếp Nhân 0909941199 để được hỗ trợ xem nhà, kiểm tra pháp lý – quy hoạch rõ ràng, thương lượng giá tốt nhất với chủ và hỗ trợ trọn gói công chứng, sang tên nhanh gọn.
+`;
+
+// Prompt cho Quận 5
+export const prompt_15 =
+    `
+#bannhaquan5 #nhaquan5 #quan5 #q5 #quận5 #nha #bannha #batdongsan #bds #nhamoi #nhadep #nhamoidep #muanhaquan5 #muanaquan5 #muanhaq5 #nhanguyencan #vungbenland #quan5 #cholon #quinhuong #thuocnam
+Liên hệ trực tiếp Nhân 0909941199 để được hỗ trợ xem nhà, kiểm tra pháp lý – quy hoạch rõ ràng, thương lượng giá tốt nhất với chủ và hỗ trợ trọn gói công chứng, sang tên nhanh gọn.
+`;
+
+// Prompt cho Quận 8
+export const prompt_16 =
+    `
+#bannhaquan8 #nhaquan8 #quan8 #q8 #quận8 #nha #bannha #batdongsan #bds #nhamoi #nhadep #nhamoidep #muanhaquan8 #muanaquan8 #muanhaq8 #nhanguyencan #vungbenland #quan8 #kenhdoi #daoquan8 #phongchonglu
+Liên hệ trực tiếp Nhân 0909941199 để được hỗ trợ xem nhà, kiểm tra pháp lý – quy hoạch rõ ràng, thương lượng giá tốt nhất với chủ và hỗ trợ trọn gói công chứng, sang tên nhanh gọn.
+`;
+// Prompt cho Quận 2 (nay thuộc TP Thủ Đức)
+export const prompt_17 =
+    `
+#bannhaquan2 #nhaquan2 #quan2 #q2 #quận2 #nha #bannha #batdongsan #bds #nhamoi #nhadep #nhamoidep #muanhaquan2 #muanaquan2 #muanhaq2 #nhanguyencan #vungbenland #quan2 #thanhphothuduc #thuduc #saigonriverside #thaoDien #anphu #binhkhang #catlai #thuthiem
 Liên hệ trực tiếp Nhân 0909941199 để được hỗ trợ xem nhà, kiểm tra pháp lý – quy hoạch rõ ràng, thương lượng giá tốt nhất với chủ và hỗ trợ trọn gói công chứng, sang tên nhanh gọn.
 `;

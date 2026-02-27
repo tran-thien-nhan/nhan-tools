@@ -4,7 +4,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { Copy, RefreshCw, Hash, Type, Binary, Check, FileText, Code, Eye, X } from 'lucide-react';
 import { cn, copyToClipboard } from '../utils';
 import { Mode } from '../interface';
-import { prompt_4, prompt_1, prompt_2, prompt_3, prompt_8, prompt_9 } from '../_data/prompt';
+import { prompt_4, prompt_1, prompt_2, prompt_3, prompt_8, prompt_9, prompt_10, prompt_11, prompt_12, prompt_13, prompt_14, prompt_15, prompt_16, prompt_17 } from '../_data/prompt';
 
 // Định nghĩa interface cho prompt
 interface Prompt {
@@ -15,9 +15,17 @@ interface Prompt {
 
 // Danh sách prompts
 const prompts: Prompt[] = [
+    { id: 'prompt_10', name: 'quận 1', content: prompt_10 },
+    { id: 'prompt_17', name: 'quận 2', content: prompt_17 },
+    { id: 'prompt_11', name: 'quận 3', content: prompt_11 },
     { id: 'prompt_8', name: 'quận 4', content: prompt_8 },
-    { id: 'prompt_9', name: 'nhà bè', content: prompt_9 },
+    { id: 'prompt_15', name: 'quận 5', content: prompt_15 },
     { id: 'prompt_4', name: 'quận 7', content: prompt_4 },
+    { id: 'prompt_16', name: 'quận 8', content: prompt_16 },
+    { id: 'prompt_14', name: 'quận 10', content: prompt_14 },
+    { id: 'prompt_9', name: 'nhà bè', content: prompt_9 },
+    { id: 'prompt_12', name: 'phú nhuận', content: prompt_12 },
+    { id: 'prompt_13', name: 'bình thạnh', content: prompt_13 },
 ];
 
 const CodeGenerator = () => {
@@ -56,7 +64,7 @@ const CodeGenerator = () => {
 
     // Cập nhật preview content khi selectedPrompt hoặc result thay đổi
     useEffect(() => {
-        setPreviewContent(`Mã căn: ${result}\n${selectedPrompt.content}\n\n`);
+        setPreviewContent(`${result}\n${selectedPrompt.content}\n\n`);
     }, [selectedPrompt, result]);
 
     const handleCopyBoth = async () => {

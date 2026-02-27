@@ -86,5 +86,13 @@
         "icon": "Game",
         "path": "/flappy-bird",
         "color": "green"
+    },
+    {
+        "id": "tiktok-scraper",
+        "name": "TikTok Scraper",
+        "description": "Cào video từ các kênh TikTok, tải về và quản lý",
+        "icon": "Video",
+        "path": "/tiktok-scraper",
+        "color": "purple"
     }
 ]
