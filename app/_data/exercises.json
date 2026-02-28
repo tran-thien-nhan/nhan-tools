@@ -1,0 +1,234 @@
+[
+    {
+        "id": "pushup",
+        "name": "Push Up",
+        "muscles": [
+            "Ngực",
+            "Vai",
+            "Tay sau"
+        ],
+        "image": "https://training.fit/wp-content/uploads/2020/02/liegestuetze.png",
+        "video": ""
+    },
+    {
+        "id": "squat",
+        "name": "Bodyweight Squat",
+        "muscles": [
+            "Đùi trước",
+            "Mông"
+        ],
+        "image": "https://training.fit/wp-content/uploads/2020/03/kniebeugen-800x448.png",
+        "video": ""
+    },
+    {
+        "id": "plank",
+        "name": "Plank",
+        "muscles": [
+            "Core",
+            "Vai"
+        ],
+        "image": "https://cali.vn/storage/app/media/Editors/626bb0a84a8a5tu-the-plank-chuan-2.jpg",
+        "video": ""
+    },
+    {
+        "id": "lunges",
+        "name": "Lunges",
+        "muscles": [
+            "Mông",
+            "Đùi"
+        ],
+        "image": "https://www.thethaodaiviet.vn/upload/loi-ich-khi-tap-walking-lunges.jpg?v=1.0.0",
+        "video": ""
+    },
+    {
+        "id": "glute-bridge",
+        "name": "Glute Bridge",
+        "muscles": [
+            "Mông",
+            "Core"
+        ],
+        "image": "https://spotebi.com/wp-content/uploads/2015/01/glute-bridge-exercise-illustration.jpg",
+        "video": ""
+    },
+    {
+        "id": "mountain-climber",
+        "name": "Mountain Climber",
+        "muscles": [
+            "Core",
+            "Vai",
+            "Chân"
+        ],
+        "video": "https://www.youtube.com/shorts/9yyKVy8OWnA"
+    },
+    {
+        "id": "burpees",
+        "name": "Burpees",
+        "muscles": [
+            "Toàn thân",
+            "Tim mạch"
+        ],
+        "video": "https://www.youtube.com/shorts/zDqi7OjlQdc"
+    },
+    {
+        "id": "jump-squat",
+        "name": "Jump Squat",
+        "muscles": [
+            "Đùi",
+            "Mông",
+            "Tim mạch"
+        ],
+        "video": "https://www.youtube.com/shorts/Pg6eJSqDhBo"
+    },
+    {
+        "id": "wall-sit",
+        "name": "Wall Sit",
+        "muscles": [
+            "Đùi trước",
+            "Core"
+        ],
+        "video": "https://www.youtube.com/shorts/eFtopOBlhk8"
+    },
+    {
+        "id": "side-plank",
+        "name": "Side Plank",
+        "muscles": [
+            "Core",
+            "Liên sườn"
+        ],
+        "video": "https://www.youtube.com/shorts/F63KKkm18xw"
+    },
+    {
+        "id": "russian-twist",
+        "name": "Russian Twist",
+        "muscles": [
+            "Core",
+            "Liên sườn"
+        ],
+        "video": "https://www.youtube.com/shorts/-cPtvFdT8dc"
+    },
+    {
+        "id": "leg-raise",
+        "name": "Leg Raise",
+        "muscles": [
+            "Bụng dưới",
+            "Core"
+        ],
+        "video": "https://www.youtube.com/shorts/-nRNwczaaZk"
+    },
+    {
+        "id": "superman",
+        "name": "Superman",
+        "muscles": [
+            "Lưng dưới",
+            "Mông"
+        ],
+        "video": "https://www.youtube.com/shorts/eKB5rv5c7FQ"
+    },
+    {
+        "id": "diamond-pushup",
+        "name": "Diamond Push Up",
+        "muscles": [
+            "Ngực giữa",
+            "Tay sau"
+        ],
+        "video": "https://www.youtube.com/shorts/XBVRdyY_WHE"
+    },
+    {
+        "id": "pike-pushup",
+        "name": "Pike Push Up",
+        "muscles": [
+            "Vai",
+            "Tay sau"
+        ],
+        "video": "https://www.youtube.com/shorts/o2K9G7jQc5k"
+    },
+    {
+        "id": "calf-raise",
+        "name": "Calf Raise",
+        "muscles": [
+            "Bắp chân"
+        ],
+        "video": "https://www.youtube.com/shorts/fZYTVO9-Ggk"
+    },
+    {
+        "id": "step-up",
+        "name": "Step Up",
+        "muscles": [
+            "Đùi",
+            "Mông"
+        ],
+        "video": "https://www.youtube.com/shorts/8oVay65wjVI"
+    },
+    {
+        "id": "high-knees",
+        "name": "High Knees",
+        "muscles": [
+            "Chân",
+            "Tim mạch"
+        ],
+        "video": "https://www.youtube.com/shorts/f2aDMXg91VQ"
+    },
+    {
+        "id": "bicycle-crunch",
+        "name": "Bicycle Crunch",
+        "muscles": [
+            "Core",
+            "Liên sườn"
+        ],
+        "video": "https://www.youtube.com/shorts/gkcne43FWVw"
+    },
+    {
+        "id": "reverse-lunge",
+        "name": "Reverse Lunge",
+        "muscles": [
+            "Mông",
+            "Đùi"
+        ],
+        "video": "https://www.youtube.com/shorts/Jfct_jXl89Q"
+    },
+    {
+        "id": "reverse-snow-angel",
+        "name": "Reverse Snow Angel",
+        "muscles": [
+            "Lưng giữa",
+            "Vai sau"
+        ],
+        "video": "https://www.youtube.com/shorts/d9OrvhfkIbk"
+    },
+    {
+        "id": "back-extension-floor",
+        "name": "Back Extension (Floor)",
+        "muscles": [
+            "Lưng dưới",
+            "Mông"
+        ],
+        "video": "https://www.youtube.com/shorts/6VZ53xN3E4Q"
+    },
+    {
+        "id": "inverted-row-table",
+        "name": "Inverted Row (Under Table)",
+        "muscles": [
+            "Lưng xô",
+            "Tay trước"
+        ],
+        "video": "https://www.youtube.com/shorts/iPbAldlORHE"
+    },
+    {
+        "id": "bird-dog",
+        "name": "Bird Dog",
+        "muscles": [
+            "Lưng dưới",
+            "Core"
+        ],
+        "video": "https://www.youtube.com/shorts/vtwhC3tfVow"
+    },
+    {
+        "id": "superman-hold",
+        "name": "Superman Hold",
+        "muscles": [
+            "Lưng dưới",
+            "Mông"
+        ],
+        "video": "https://www.youtube.com/shorts/VD6ma6oe4ZA"
+    }
+]

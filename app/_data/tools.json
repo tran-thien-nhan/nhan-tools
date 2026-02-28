@@ -102,5 +102,13 @@
         "icon": "ChefHat",
         "path": "/whats-for-dinner",
         "color": "orange"
+    },
+    {
+        "id": "home-workout-ai",
+        "name": "Tập luyện tại nhà AI",
+        "description": "AI tạo lịch tập cá nhân hóa dựa trên mục tiêu và thể trạng",
+        "icon": "Dumbbell",
+        "path": "/home-workout-ai",
+        "color": "rose"
     }
 ]
