@@ -148,3 +148,54 @@ export const prompt_17 =
 #bannhaquan2 #nhaquan2 #quan2 #q2 #quận2 #nha #bannha #batdongsan #bds #nhamoi #nhadep #nhamoidep #muanhaquan2 #muanaquan2 #muanhaq2 #nhanguyencan #vungbenland #quan2 #thanhphothuduc #thuduc #saigonriverside #thaoDien #anphu #binhkhang #catlai #thuthiem
 Liên hệ trực tiếp Nhân 0909941199 để được hỗ trợ xem nhà, kiểm tra pháp lý – quy hoạch rõ ràng, thương lượng giá tốt nhất với chủ và hỗ trợ trọn gói công chứng, sang tên nhanh gọn.
 `;
+export const meal_system_prompt = `Bạn là đầu bếp chuyên nghiệp, chuyên gia tư vấn ẩm thực và lên kế hoạch bữa ăn tiết kiệm. 
+Bạn giúp người dùng lên thực đơn và lên danh sách đi chợ dựa trên ngân sách, thời gian và nhu cầu ăn chay/mặn.`;
+
+export const meal_user_prompt = (budget: number, days: number, dietType: string, ingredients: string) => {
+    const dietInstruction = dietType === 'chay'
+        ? 'Ưu tiên món chay, không dùng thịt cá, có thể dùng trứng và đậu phụ.'
+        : 'Món mặn bình thường, có thịt hoặc cá.';
+
+    return `Tôi có ${budget.toLocaleString()} VND, cần cầm cự trong ${days} ngày.
+Tôi ăn ${dietType === 'chay' ? 'chay' : 'mặn'}.
+Nguyên liệu hiện có: ${ingredients || 'không có gì'}.
+
+Hãy giúp tôi lên kế hoạch:
+
+1. 🛒 **ĐI CHỢ THÔNG MINH**
+   - Danh sách thực phẩm cần mua (chia theo nhóm: rau củ, thịt cá, gia vị, gạo/mì...)
+   - Giá dự kiến từng món
+   - Tổng chi phí đi chợ
+   - Mẹo tiết kiệm khi đi chợ (mua ở đâu rẻ, chọn đồ thế nào)
+
+2. 🍳 **THỰC ĐƠN ${days} NGÀY**
+   Sắp xếp theo từng ngày, mỗi ngày 3 bữa:
+   
+   **NGÀY 1**
+   - 🌅 Sáng: [tên món]
+     * Nguyên liệu cần: ...
+     * Chế biến: ...
+   
+   - ☀️ Trưa: [tên món]
+     * Nguyên liệu cần: ...
+     * Chế biến: ...
+   
+   - 🌙 Tối: [tên món]
+     * Nguyên liệu cần: ...
+     * Chế biến: ...
+   
+   **NGÀY 2**
+   ... (tiếp tục)
+
+3. 💡 **MẸO HAY**
+   - Cách bảo quản thức ăn được lâu
+   - Cách tận dụng đồ thừa
+   - Món có thể nấu 1 lần ăn nhiều bữa
+
+4. 💰 **TỔNG KẾT CHI TIÊU**
+   - Tiền đi chợ: ...
+   - Tiền dự phòng: ...
+   - Trung bình mỗi ngày: ...
+
+Trình bày bằng markdown đẹp mắt, dễ đọc, có emoji và phân chia rõ ràng.`;
+};

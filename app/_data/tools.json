@@ -94,5 +94,13 @@
         "icon": "StickyNote",
         "path": "/notes-app",
         "color": "amber"
+    },
+    {
+        "id": "whats-for-dinner",
+        "name": "Nhà còn gì để nấu",
+        "description": "Nhập số tiền và nguyên liệu còn lại, AI sẽ gợi ý món ăn",
+        "icon": "ChefHat",
+        "path": "/whats-for-dinner",
+        "color": "orange"
     }
 ]
