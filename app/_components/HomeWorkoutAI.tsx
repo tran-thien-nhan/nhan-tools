@@ -50,36 +50,60 @@ export default function HomeWorkoutAI() {
         sessionStorage.setItem("workout-profile", JSON.stringify(profile))
 
         try {
+            // Lọc bài tập dựa trên chấn thương
+            let filteredExercises = exercises
+            if (profile.injury) {
+                // Giả sử có logic lọc theo chấn thương
+                filteredExercises = exercises.filter(ex => {
+                    const injury = profile.injury.toLowerCase()
+                    if (injury.includes('gối') || injury.includes('đầu gối')) {
+                        return !ex.muscles?.some(m =>
+                            m.toLowerCase().includes('gối') ||
+                            m.toLowerCase().includes('chân')
+                        )
+                    }
+                    return true
+                })
+            }
+
+            // Random shuffle danh sách bài tập
+            const shuffled = [...filteredExercises].sort(() => 0.5 - Math.random())
+
+            // Lấy 10 bài tập ngẫu nhiên để gửi cho AI
+            const randomSubset = shuffled.slice(0, Math.min(20, shuffled.length))
+
             const ai = new GoogleGenAI({
                 apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY
             })
 
             const prompt = `
-      Người dùng:
-      Tuổi: ${profile.age}
-      Cân nặng: ${profile.weight}
-      Giới tính: ${profile.gender}
-      Cân nặng mong muốn: ${profile.targetWeight}
-      Thời gian: ${profile.duration} tuần
-      Mục tiêu: ${profile.goal}
-      Chấn thương: ${profile.injury}
+  Người dùng:
+  Tuổi: ${profile.age}
+  Cân nặng: ${profile.weight}
+  Giới tính: ${profile.gender}
+  Cân nặng mong muốn: ${profile.targetWeight}
+  Thời gian: ${profile.duration} tuần
+  Mục tiêu: ${profile.goal}
+  Chấn thương: ${profile.injury}
 
-      Đây là danh sách bài tập JSON:
-      ${JSON.stringify(exercises)}
+  Đây là danh sách bài tập NGẪU NHIÊN (đã được lọc):
+  ${JSON.stringify(randomSubset)}
 
-      Hãy chọn ra 5 bài tập phù hợp nhất cho 1 ngày tập.
+  Từ danh sách trên, hãy chọn ra 5 bài tập phù hợp nhất.
+  Hãy chọn các bài tập KHÁC NHAU so với lần trước.
 
-      Chỉ trả về JSON array gồm:
-      [
-        { "id": number, "sets": number, "reps": number }
-      ]
+  Chỉ trả về JSON array gồm:
+  [
+    { "id": number, "sets": number, "reps": number }
+  ]
 
-      Chỉ trả về JSON thuần. Không dùng markdown.
-      `
+  Chỉ trả về JSON thuần. Không dùng markdown.
+  `
 
             const response = await ai.models.generateContent({
                 model: model,
-                contents: prompt
+                contents: prompt,
+
             })
 
             let raw = response.text || "[]"
@@ -93,7 +117,12 @@ export default function HomeWorkoutAI() {
                 parsed = JSON.parse(raw)
             } catch (e) {
                 console.error("Parse error:", e)
-                console.log("Raw:", raw)
+                // Fallback: random từ subset
+                parsed = randomSubset.slice(0, 5).map(ex => ({
+                    id: ex.id,
+                    sets: 3,
+                    reps: 12
+                }))
             }
 
             const mapped = parsed.map((item: any) => {
@@ -104,6 +133,14 @@ export default function HomeWorkoutAI() {
             setResult(mapped)
         } catch (err) {
             console.error(err)
+            // Fallback hoàn toàn random
+            const shuffled = [...exercises].sort(() => 0.5 - Math.random())
+            const randomExercises = shuffled.slice(0, 5).map(ex => ({
+                ...ex,
+                sets: 3,
+                reps: 12
+            }))
+            setResult(randomExercises)
         } finally {
             setLoading(false)
         }
