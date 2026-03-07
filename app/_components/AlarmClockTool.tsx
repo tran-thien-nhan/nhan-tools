@@ -57,7 +57,7 @@ const AlarmClockTool = () => {
     // Audio states
     const [showAlarmModal, setShowAlarmModal] = useState(false);
     const audioRef = useRef<HTMLAudioElement | null>(null);
-    const playButtonRef = useRef<HTMLButtonElement | null>(null);
+    const [hasUserInteracted, setHasUserInteracted] = useState(false);
 
     // Alarm states
     const [alarms, setAlarms] = useState<Alarm[]>([
@@ -95,20 +95,53 @@ const AlarmClockTool = () => {
         };
     }, []);
 
-    // Auto click play button when modal opens on mobile
+    // Đánh dấu user đã tương tác với trang
     useEffect(() => {
-        if (showAlarmModal && isMobile && !isAudioPlaying) {
-            // Đợi modal render xong rồi tự động click nút phát
-            const timer = setTimeout(() => {
-                if (playButtonRef.current) {
-                    playButtonRef.current.click();
-                    console.log('Tự động click nút phát âm thanh');
-                }
-            }, 500); // Đợi 500ms cho modal render
-            
-            return () => clearTimeout(timer);
-        }
+        const handleUserInteraction = () => {
+            setHasUserInteracted(true);
+            // Play thử audio nếu đang có báo thức
+            if (showAlarmModal && audioRef.current) {
+                audioRef.current.play().catch(() => {});
+            }
+        };
+
+        window.addEventListener('click', handleUserInteraction);
+        window.addEventListener('touchstart', handleUserInteraction);
+        window.addEventListener('keydown', handleUserInteraction);
+
+        return () => {
+            window.removeEventListener('click', handleUserInteraction);
+            window.removeEventListener('touchstart', handleUserInteraction);
+            window.removeEventListener('keydown', handleUserInteraction);
+        };
     }, [showAlarmModal]);
+
+    // Phát audio ngay khi modal mở
+    useEffect(() => {
+        if (showAlarmModal && audioRef.current) {
+            const playAudio = async () => {
+                try {
+                    await audioRef.current?.play();
+                    console.log('Đã phát âm thanh tự động');
+                } catch (error) {
+                    console.log('Không thể phát tự động:', error);
+                    // Trên mobile, cần user tương tác
+                    // Sẽ thử lại khi user click bất kỳ đâu
+                }
+            };
+            
+            // Thử phát ngay
+            playAudio();
+            
+            // Nếu chưa có interaction, thử lại sau 1s
+            if (!hasUserInteracted) {
+                const timer = setTimeout(() => {
+                    playAudio();
+                }, 1000);
+                return () => clearTimeout(timer);
+            }
+        }
+    }, [showAlarmModal, hasUserInteracted]);
 
     const startAlarmSound = async () => {
         if (!soundEnabled || !audioRef.current) return;
@@ -120,23 +153,6 @@ const AlarmClockTool = () => {
         if (audioRef.current) {
             audioRef.current.pause();
             audioRef.current.currentTime = 0;
-            setIsAudioPlaying(false);
-        }
-    };
-
-    // Hàm phát khi user click hoặc tự động click
-    const handlePlayClick = async () => {
-        if (audioRef.current) {
-            try {
-                // Thử phát audio
-                await audioRef.current.play();
-                setIsAudioPlaying(true);
-                console.log('Đã phát âm thanh');
-            } catch (e) {
-                console.log('Lỗi khi phát:', e);
-                // Nếu lỗi, cho phép thử lại
-                setIsAudioPlaying(false);
-            }
         }
     };
 
@@ -144,7 +160,6 @@ const AlarmClockTool = () => {
     const [soundEnabled, setSoundEnabled] = useState(true);
     const [alarmTriggered, setAlarmTriggered] = useState<string | null>(null);
     const [showAddAlarm, setShowAddAlarm] = useState(false);
-    const [isAudioPlaying, setIsAudioPlaying] = useState(false);
     const [newAlarm, setNewAlarm] = useState<Partial<Alarm>>({
         time: '08:00',
         label: '',
@@ -500,25 +515,11 @@ const AlarmClockTool = () => {
                                 {alarms.find(a => a.id === alarmTriggered)?.time}
                             </p>
 
-                            {/* Nút phát âm thanh - sẽ tự động được click */}
-                            {!isAudioPlaying && (
-                                <button
-                                    ref={playButtonRef}
-                                    onClick={handlePlayClick}
-                                    className="w-full mb-4 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl flex items-center justify-center gap-2"
-                                >
-                                    <Play className="w-5 h-5" />
-                                    Phát âm thanh
-                                </button>
-                            )}
-
                             {/* Hiển thị trạng thái đang phát */}
-                            {isAudioPlaying && (
-                                <div className="w-full mb-4 py-3 bg-green-100 text-green-800 font-bold rounded-xl flex items-center justify-center gap-2">
-                                    <Volume2 className="w-5 h-5 animate-pulse" />
-                                    Đang phát...
-                                </div>
-                            )}
+                            <div className="w-full mb-4 py-3 bg-green-100 text-green-800 font-bold rounded-xl flex items-center justify-center gap-2">
+                                <Volume2 className="w-5 h-5 animate-pulse" />
+                                Đang phát...
+                            </div>
 
                             <div className="flex gap-3">
                                 <button
