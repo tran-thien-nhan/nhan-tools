@@ -101,6 +101,18 @@ const AlarmClockTool = () => {
         };
     }, []);
 
+    // Auto play audio when modal opens on mobile
+    useEffect(() => {
+        if (showAlarmModal && isMobile && !isAudioPlaying) {
+            // Tự động click nút phát sau 300ms khi modal mở
+            const timer = setTimeout(() => {
+                handlePlayClick();
+            }, 300);
+            
+            return () => clearTimeout(timer);
+        }
+    }, [showAlarmModal]);
+
     const startAlarmSound = async () => {
         if (!soundEnabled || !audioRef.current) return;
 
@@ -112,13 +124,13 @@ const AlarmClockTool = () => {
                 await audioContextRef.current.resume();
             }
 
-            // Phát audio
+            // Thử phát audio tự động
             await audioRef.current.play();
+            setIsAudioPlaying(true);
             console.log('Đang phát âm thanh');
         } catch (error) {
             console.log('Không thể tự động phát âm thanh:', error);
-
-            // Nếu không tự động phát được, hiển thị nút play thủ công
+            // Nếu không tự động phát được, để useEffect xử lý auto-click
             setIsAudioPlaying(false);
         }
     };
@@ -136,8 +148,14 @@ const AlarmClockTool = () => {
     const handlePlayClick = async () => {
         if (audioRef.current) {
             try {
+                // Đánh thức AudioContext trước khi phát
+                if (audioContextRef.current?.state === 'suspended') {
+                    await audioContextRef.current.resume();
+                }
+                
                 await audioRef.current.play();
                 setIsAudioPlaying(true);
+                console.log('Đã phát âm thanh từ nút bấm');
             } catch (e) {
                 console.log('Lỗi khi phát:', e);
             }
@@ -504,14 +522,24 @@ const AlarmClockTool = () => {
                                 {alarms.find(a => a.id === alarmTriggered)?.time}
                             </p>
 
+                            {/* Nút phát âm thanh - sẽ tự động được click */}
                             {isMobile && !isAudioPlaying && (
                                 <button
+                                    id="play-audio-button"
                                     onClick={handlePlayClick}
-                                    className="w-full mb-4 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl flex items-center justify-center gap-2"
+                                    className="w-full mb-4 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl flex items-center justify-center gap-2 animate-pulse"
                                 >
                                     <Play className="w-5 h-5" />
                                     Phát âm thanh
                                 </button>
+                            )}
+
+                            {/* Hiển thị trạng thái đang phát */}
+                            {isMobile && isAudioPlaying && (
+                                <div className="w-full mb-4 py-3 bg-green-100 text-green-800 font-bold rounded-xl flex items-center justify-center gap-2">
+                                    <Volume2 className="w-5 h-5 animate-pulse" />
+                                    Đang phát...
+                                </div>
                             )}
 
                             <div className="flex gap-3">
