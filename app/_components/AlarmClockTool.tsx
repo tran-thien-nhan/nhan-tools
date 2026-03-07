@@ -75,6 +75,7 @@ const AlarmClockTool = () => {
     // YouTube player states
     const [showYouTubePlayer, setShowYouTubePlayer] = useState(false);
     const [isYouTubePlaying, setIsYouTubePlaying] = useState(false);
+    const [youTubeReady, setYouTubeReady] = useState(false);
     const youTubePlayerRef = useRef<any>(null);
     const playerContainerRef = useRef<HTMLDivElement>(null);
 
@@ -113,17 +114,18 @@ const AlarmClockTool = () => {
         // Define callback when API is ready
         window.onYouTubeIframeAPIReady = () => {
             console.log('YouTube API ready');
+            setYouTubeReady(true);
         };
     }, []);
 
     // Initialize YouTube player when needed
     const initYouTubePlayer = () => {
-        if (!playerContainerRef.current || youTubePlayerRef.current) return;
+        if (!playerContainerRef.current || youTubePlayerRef.current || !window.YT) return;
 
         youTubePlayerRef.current = new window.YT.Player(playerContainerRef.current, {
             videoId: 'dQw4w9WgXcQ',
             playerVars: {
-                autoplay: 1,
+                autoplay: 0, // Tắt autoplay mặc định
                 controls: 0,
                 disablekb: 1,
                 fs: 0,
@@ -132,15 +134,25 @@ const AlarmClockTool = () => {
                 rel: 0,
                 showinfo: 0,
                 loop: 1,
-                playlist: 'dQw4w9WgXcQ' // Required for loop
+                playlist: 'dQw4w9WgXcQ',
+                playsinline: 1 // Quan trọng cho mobile
             },
             events: {
                 onReady: (event: any) => {
                     console.log('YouTube player ready');
                     event.target.setVolume(100);
+                    // Thử phát video sau khi sẵn sàng
                     if (soundEnabled) {
-                        event.target.playVideo();
-                        setIsYouTubePlaying(true);
+                        // Trên mobile, cần user interaction để phát video
+                        // Nên chúng ta sẽ thử phát và bắt lỗi
+                        try {
+                            event.target.playVideo().catch((e: any) => {
+                                console.log('Auto-play bị chặn trên mobile, cần user tương tác');
+                                // Hiển thị nút play thủ công
+                            });
+                        } catch (e) {
+                            console.log('Auto-play bị chặn');
+                        }
                     }
                 },
                 onStateChange: (event: any) => {
@@ -148,9 +160,33 @@ const AlarmClockTool = () => {
                     if (event.data === window.YT.PlayerState.ENDED) {
                         event.target.playVideo(); // Replay
                     }
+                },
+                onError: (event: any) => {
+                    console.log('YouTube error:', event.data);
                 }
             }
         });
+    };
+
+    // Hàm phát video với xử lý cho mobile
+    const playYouTubeVideo = () => {
+        if (youTubePlayerRef.current && youTubePlayerRef.current.playVideo) {
+            try {
+                // Thử phát video
+                const playPromise = youTubePlayerRef.current.playVideo();
+                
+                // Xử lý Promise cho mobile
+                if (playPromise !== undefined) {
+                    playPromise.catch((error: any) => {
+                        console.log('Không thể tự động phát trên mobile:', error);
+                        // Nếu không tự động phát được, hiển thị thông báo
+                        setIsYouTubePlaying(false);
+                    });
+                }
+            } catch (error) {
+                console.log('Lỗi khi phát video:', error);
+            }
+        }
     };
 
     const initAudio = () => {
@@ -172,6 +208,10 @@ const AlarmClockTool = () => {
         // Small delay to ensure player container is rendered
         setTimeout(() => {
             initYouTubePlayer();
+            // Thêm delay nhỏ để player khởi tạo xong
+            setTimeout(() => {
+                playYouTubeVideo();
+            }, 500);
         }, 100);
     };
 
@@ -183,6 +223,14 @@ const AlarmClockTool = () => {
             setIsYouTubePlaying(false);
         }
         youTubePlayerRef.current = null;
+    };
+
+    // Hàm phát thủ công khi user click vào màn hình
+    const handlePlayerClick = () => {
+        if (youTubePlayerRef.current && youTubePlayerRef.current.playVideo) {
+            youTubePlayerRef.current.playVideo();
+            setIsYouTubePlaying(true);
+        }
     };
 
     const playBeep = (frequency = 800, duration = 200) => {
@@ -520,6 +568,9 @@ const AlarmClockTool = () => {
 
     const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
+    // Kiểm tra nếu là mobile
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
     return (
         <div className="w-full max-w-4xl mx-auto bg-gradient-to-br from-blue-50 to-indigo-50 rounded-3xl shadow-xl overflow-hidden">
             {/* Header */}
@@ -589,14 +640,28 @@ const AlarmClockTool = () => {
                                 <p className="text-gray-600">
                                     {alarms.find(a => a.id === alarmTriggered)?.label} - {alarms.find(a => a.id === alarmTriggered)?.time}
                                 </p>
+                                {isMobile && !isYouTubePlaying && (
+                                    <p className="text-sm text-blue-600 mt-2">
+                                        👆 Nhấn vào video để phát (do trình duyệt mobile chặn tự động phát)
+                                    </p>
+                                )}
                             </div>
 
                             {/* YouTube Player Container */}
-                            <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+                            <div 
+                                className="relative w-full cursor-pointer" 
+                                style={{ paddingBottom: '56.25%' }}
+                                onClick={handlePlayerClick}
+                            >
                                 <div
                                     ref={playerContainerRef}
                                     className="absolute top-0 left-0 w-full h-full rounded-lg overflow-hidden"
                                 />
+                                {isMobile && !isYouTubePlaying && (
+                                    <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-lg">
+                                        <Play className="w-16 h-16 text-white opacity-75" />
+                                    </div>
+                                )}
                             </div>
 
                             {/* Controls */}
