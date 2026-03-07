@@ -84,7 +84,7 @@ const AlarmClockTool = () => {
     // Khởi tạo audio
     useEffect(() => {
         // Tạo audio element
-        audioRef.current = new Audio('/sounds/rickroll.mp3'); // Đặt file MP3 trong public/sounds/
+        audioRef.current = new Audio('/sounds/rickroll.mp3');
         audioRef.current.loop = true;
 
         // Khởi tạo AudioContext để xử lý auto-play trên mobile
@@ -101,15 +101,15 @@ const AlarmClockTool = () => {
         };
     }, []);
 
-    // Auto play audio when modal opens on mobile
+    // Tự động thử phát audio khi modal mở
     useEffect(() => {
-        if (showAlarmModal && isMobile && !isAudioPlaying) {
-            // Tự động click nút phát sau 300ms khi modal mở
-            const timer = setTimeout(() => {
+        if (showAlarmModal && audioRef.current && !isAudioPlaying) {
+            // Tạo một timeout nhỏ để đảm bảo modal đã render xong
+            const autoPlayTimer = setTimeout(() => {
                 handlePlayClick();
-            }, 300);
-            
-            return () => clearTimeout(timer);
+            }, 100);
+
+            return () => clearTimeout(autoPlayTimer);
         }
     }, [showAlarmModal]);
 
@@ -123,15 +123,8 @@ const AlarmClockTool = () => {
             if (audioContextRef.current?.state === 'suspended') {
                 await audioContextRef.current.resume();
             }
-
-            // Thử phát audio tự động
-            await audioRef.current.play();
-            setIsAudioPlaying(true);
-            console.log('Đang phát âm thanh');
         } catch (error) {
-            console.log('Không thể tự động phát âm thanh:', error);
-            // Nếu không tự động phát được, để useEffect xử lý auto-click
-            setIsAudioPlaying(false);
+            console.log('Lỗi khi đánh thức AudioContext:', error);
         }
     };
 
@@ -148,16 +141,17 @@ const AlarmClockTool = () => {
     const handlePlayClick = async () => {
         if (audioRef.current) {
             try {
-                // Đánh thức AudioContext trước khi phát
+                // Đánh thức AudioContext nếu cần
                 if (audioContextRef.current?.state === 'suspended') {
                     await audioContextRef.current.resume();
                 }
                 
                 await audioRef.current.play();
                 setIsAudioPlaying(true);
-                console.log('Đã phát âm thanh từ nút bấm');
+                console.log('Đã phát âm thanh thành công');
             } catch (e) {
                 console.log('Lỗi khi phát:', e);
+                setIsAudioPlaying(false);
             }
         }
     };
@@ -522,23 +516,11 @@ const AlarmClockTool = () => {
                                 {alarms.find(a => a.id === alarmTriggered)?.time}
                             </p>
 
-                            {/* Nút phát âm thanh - sẽ tự động được click */}
+                            {/* Ẩn nút "Phát âm thanh" vì đã tự động phát */}
                             {isMobile && !isAudioPlaying && (
-                                <button
-                                    id="play-audio-button"
-                                    onClick={handlePlayClick}
-                                    className="w-full mb-4 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl flex items-center justify-center gap-2 animate-pulse"
-                                >
-                                    <Play className="w-5 h-5" />
-                                    Phát âm thanh
-                                </button>
-                            )}
-
-                            {/* Hiển thị trạng thái đang phát */}
-                            {isMobile && isAudioPlaying && (
-                                <div className="w-full mb-4 py-3 bg-green-100 text-green-800 font-bold rounded-xl flex items-center justify-center gap-2">
+                                <div className="w-full mb-4 py-3 bg-yellow-100 text-yellow-800 font-bold rounded-xl flex items-center justify-center gap-2">
                                     <Volume2 className="w-5 h-5 animate-pulse" />
-                                    Đang phát...
+                                    Đang phát âm thanh...
                                 </div>
                             )}
 
