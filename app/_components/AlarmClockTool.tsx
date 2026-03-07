@@ -59,6 +59,11 @@ const AlarmClockTool = () => {
     const [stopwatchRunning, setStopwatchRunning] = useState(false);
     const [stopwatchLaps, setStopwatchLaps] = useState<number[]>([]);
 
+    const audioContextRef = useRef<AudioContext | null>(null);
+    const alarmSoundInterval = useRef<NodeJS.Timeout | null>(null);
+
+    const lastTriggeredRef = useRef<string | null>(null);
+
     // Alarm states
     const [alarms, setAlarms] = useState<Alarm[]>([
         {
@@ -80,6 +85,52 @@ const AlarmClockTool = () => {
             snooze: 5
         }
     ]);
+
+    const initAudio = () => {
+        if (!audioContextRef.current) {
+            audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+        }
+
+        if (audioContextRef.current.state === "suspended") {
+            audioContextRef.current.resume();
+        }
+    };
+
+    const startAlarmSound = () => {
+        if (!soundEnabled) return;
+
+        initAudio();
+
+        if (alarmSoundInterval.current) return;
+
+        alarmSoundInterval.current = setInterval(() => {
+            playBeep(900, 200);
+            setTimeout(() => playBeep(1100, 200), 200);
+        }, 1200);
+    };
+
+    const stopAlarmSound = () => {
+        if (alarmSoundInterval.current) {
+            clearInterval(alarmSoundInterval.current);
+            alarmSoundInterval.current = null;
+        }
+    };
+
+    const playBeep = (frequency = 800, duration = 200) => {
+        if (!audioContextRef.current) return;
+
+        const oscillator = audioContextRef.current.createOscillator();
+        const gainNode = audioContextRef.current.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContextRef.current.destination);
+
+        oscillator.frequency.value = frequency;
+        gainNode.gain.setValueAtTime(0.1, audioContextRef.current.currentTime);
+
+        oscillator.start();
+        oscillator.stop(audioContextRef.current.currentTime + duration / 1000);
+    };
 
     // Common states
     const [soundEnabled, setSoundEnabled] = useState(true);
@@ -164,7 +215,7 @@ const AlarmClockTool = () => {
     useEffect(() => {
         alarmCheckInterval.current = setInterval(() => {
             checkAlarms();
-        }, 60000); // Check every minute
+        }, 1000); // Check every minute
 
         return () => {
             if (alarmCheckInterval.current) {
@@ -173,33 +224,68 @@ const AlarmClockTool = () => {
         };
     }, [alarms]);
 
+    useEffect(() => {
+        return () => {
+            stopAlarmSound();
+        };
+    }, []);
+
     const checkAlarms = () => {
         const now = new Date();
-        const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+
+        const currentTime =
+            now.getHours().toString().padStart(2, '0') +
+            ":" +
+            now.getMinutes().toString().padStart(2, '0');
+
         const currentDay = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][now.getDay()];
 
         alarms.forEach(alarm => {
-            if (alarm.enabled && alarm.time === currentTime) {
+
+            if (!alarm.enabled) return;
+
+            if (alarm.time === currentTime) {
+
                 if (alarm.repeat.length === 0 || alarm.repeat.includes(currentDay)) {
-                    triggerAlarm(alarm.id);
+
+                    if (lastTriggeredRef.current !== alarm.id + currentTime) {
+
+                        lastTriggeredRef.current = alarm.id + currentTime;
+
+                        triggerAlarm(alarm.id);
+
+                    }
+
                 }
+
             }
+
         });
     };
 
     const triggerAlarm = (alarmId: string) => {
         setAlarmTriggered(alarmId);
-        if (soundEnabled && audioRef.current) {
-            audioRef.current.play();
-        }
+        startAlarmSound();
+
+        setTimeout(() => {
+            lastTriggeredRef.current = null;
+        }, 60000);
     };
 
     const stopAlarm = () => {
-        setAlarmTriggered(null);
-        if (audioRef.current) {
-            audioRef.current.pause();
-            audioRef.current.currentTime = 0;
+        stopAlarmSound();
+
+        if (alarmTriggered) {
+            const now = new Date();
+            const currentTime =
+                now.getHours().toString().padStart(2, '0') +
+                ":" +
+                now.getMinutes().toString().padStart(2, '0');
+
+            lastTriggeredRef.current = alarmTriggered + currentTime;
         }
+
+        setAlarmTriggered(null);
     };
 
     const snoozeAlarm = () => {
@@ -226,20 +312,27 @@ const AlarmClockTool = () => {
 
     const handleTimerComplete = () => {
         setTimerRunning(false);
-        if (soundEnabled && audioRef.current) {
-            audioRef.current.play();
-            setTimeout(() => {
-                if (audioRef.current) {
-                    audioRef.current.pause();
-                    audioRef.current.currentTime = 0;
-                }
-            }, 5000);
-        }
+        startAlarmSound();
     };
 
     const startTimer = () => {
+        initAudio();
         setTimerRunning(true);
         setTimerPaused(false);
+    };
+
+    const increaseTimer = () => {
+        const newTime = timerDuration + 60;
+        setTimerDuration(newTime);
+        setTimerRemaining(newTime);
+        setTimerInput(formatTimeInput(newTime));
+    };
+
+    const decreaseTimer = () => {
+        const newTime = Math.max(0, timerDuration - 60);
+        setTimerDuration(newTime);
+        setTimerRemaining(newTime);
+        setTimerInput(formatTimeInput(newTime));
     };
 
     const pauseTimer = () => {
@@ -251,6 +344,7 @@ const AlarmClockTool = () => {
         setTimerRunning(false);
         setTimerPaused(false);
         setTimerRemaining(timerDuration);
+        stopAlarmSound(); // tắt âm thanh
     };
 
     const setTimerPreset = (duration: number) => {
@@ -455,15 +549,29 @@ const AlarmClockTool = () => {
                         </div>
 
                         {/* Timer Input */}
-                        <div className="max-w-xs mx-auto">
+                        <div className="max-w-xs mx-auto flex items-center gap-2">
+                            <button
+                                onClick={increaseTimer}
+                                disabled={timerRunning}
+                                className="px-3 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg"
+                            >
+                                +
+                            </button>
                             <input
                                 type="text"
                                 value={timerInput}
                                 onChange={(e) => handleTimerInputChange(e.target.value)}
                                 disabled={timerRunning}
                                 placeholder="mm:ss"
-                                className="w-full px-4 py-2 text-center border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="flex-1 px-4 py-2 text-center border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
+                            <button
+                                onClick={decreaseTimer}
+                                disabled={timerRunning}
+                                className="px-3 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg"
+                            >
+                                -
+                            </button>
                         </div>
                     </div>
 
