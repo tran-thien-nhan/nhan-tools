@@ -16,6 +16,14 @@
         "color": "indigo"
     },
     {
+        "id": "alarm-clock",
+        "name": "Hẹn giờ & Báo thức",
+        "description": "Đặt báo thức, hẹn giờ, bấm giờ với nhiều tính năng thông minh",
+        "icon": "AlarmClock",
+        "path": "/alarm-clock",
+        "color": "orange"
+    },
+    {
         "id": "tabata-timer",
         "name": "Đếm giờ Tabata",
         "description": "Đồng hồ tập luyện cường độ cao ngắt quãng",
@@ -110,5 +118,13 @@
         "icon": "Dumbbell",
         "path": "/home-workout-ai",
         "color": "rose"
+    },
+    {
+        "id": "disc-test",
+        "name": "Trắc nghiệm DISC",
+        "description": "Bài test tính cách DISC với 50 câu hỏi, phân tích kết quả chi tiết",
+        "icon": "Users",
+        "path": "/disc-test",
+        "color": "blue"
     }
 ]
