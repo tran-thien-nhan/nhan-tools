@@ -26,6 +26,14 @@ import { cn } from '../utils';
 
 type TimerMode = 'timer' | 'alarm' | 'stopwatch';
 
+// Thêm ở đầu file, sau các import
+declare global {
+    interface Window {
+        YT: any;
+        onYouTubeIframeAPIReady: () => void;
+    }
+}
+
 type Alarm = {
     id: string;
     time: string; // HH:MM format
@@ -64,6 +72,12 @@ const AlarmClockTool = () => {
 
     const lastTriggeredRef = useRef<string | null>(null);
 
+    // YouTube player states
+    const [showYouTubePlayer, setShowYouTubePlayer] = useState(false);
+    const [isYouTubePlaying, setIsYouTubePlaying] = useState(false);
+    const youTubePlayerRef = useRef<any>(null);
+    const playerContainerRef = useRef<HTMLDivElement>(null);
+
     // Alarm states
     const [alarms, setAlarms] = useState<Alarm[]>([
         {
@@ -86,6 +100,59 @@ const AlarmClockTool = () => {
         }
     ]);
 
+    // Load YouTube API
+    useEffect(() => {
+        // Load YouTube IFrame API
+        if (!window.YT) {
+            const tag = document.createElement('script');
+            tag.src = 'https://www.youtube.com/iframe_api';
+            const firstScriptTag = document.getElementsByTagName('script')[0];
+            firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
+        }
+
+        // Define callback when API is ready
+        window.onYouTubeIframeAPIReady = () => {
+            console.log('YouTube API ready');
+        };
+    }, []);
+
+    // Initialize YouTube player when needed
+    const initYouTubePlayer = () => {
+        if (!playerContainerRef.current || youTubePlayerRef.current) return;
+
+        youTubePlayerRef.current = new window.YT.Player(playerContainerRef.current, {
+            videoId: 'dQw4w9WgXcQ',
+            playerVars: {
+                autoplay: 1,
+                controls: 0,
+                disablekb: 1,
+                fs: 0,
+                iv_load_policy: 3,
+                modestbranding: 1,
+                rel: 0,
+                showinfo: 0,
+                loop: 1,
+                playlist: 'dQw4w9WgXcQ' // Required for loop
+            },
+            events: {
+                onReady: (event: any) => {
+                    console.log('YouTube player ready');
+                    event.target.setVolume(100);
+                    if (soundEnabled) {
+                        event.target.playVideo();
+                        setIsYouTubePlaying(true);
+                    }
+                },
+                onStateChange: (event: any) => {
+                    // Video ended
+                    if (event.data === window.YT.PlayerState.ENDED) {
+                        event.target.playVideo(); // Replay
+                    }
+                }
+            }
+        });
+    };
+
     const initAudio = () => {
         if (!audioContextRef.current) {
             audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -99,21 +166,23 @@ const AlarmClockTool = () => {
     const startAlarmSound = () => {
         if (!soundEnabled) return;
 
-        initAudio();
+        // Initialize and show YouTube player
+        setShowYouTubePlayer(true);
 
-        if (alarmSoundInterval.current) return;
-
-        alarmSoundInterval.current = setInterval(() => {
-            playBeep(900, 200);
-            setTimeout(() => playBeep(1100, 200), 200);
-        }, 1200);
+        // Small delay to ensure player container is rendered
+        setTimeout(() => {
+            initYouTubePlayer();
+        }, 100);
     };
 
     const stopAlarmSound = () => {
-        if (alarmSoundInterval.current) {
-            clearInterval(alarmSoundInterval.current);
-            alarmSoundInterval.current = null;
+        // Hide YouTube player and stop video
+        setShowYouTubePlayer(false);
+        if (youTubePlayerRef.current && youTubePlayerRef.current.stopVideo) {
+            youTubePlayerRef.current.stopVideo();
+            setIsYouTubePlaying(false);
         }
+        youTubePlayerRef.current = null;
     };
 
     const playBeep = (frequency = 800, duration = 200) => {
@@ -156,7 +225,6 @@ const AlarmClockTool = () => {
     ];
 
     // Refs
-    // Refs - khởi tạo với null
     const timerInterval = useRef<NodeJS.Timeout | null>(null);
     const stopwatchInterval = useRef<NodeJS.Timeout | null>(null);
     const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -215,7 +283,7 @@ const AlarmClockTool = () => {
     useEffect(() => {
         alarmCheckInterval.current = setInterval(() => {
             checkAlarms();
-        }, 1000); // Check every minute
+        }, 1000); // Check every second
 
         return () => {
             if (alarmCheckInterval.current) {
@@ -344,7 +412,7 @@ const AlarmClockTool = () => {
         setTimerRunning(false);
         setTimerPaused(false);
         setTimerRemaining(timerDuration);
-        stopAlarmSound(); // tắt âm thanh
+        stopAlarmSound(); // tắt âm thanh/video
     };
 
     const setTimerPreset = (duration: number) => {
@@ -494,45 +562,58 @@ const AlarmClockTool = () => {
                 ))}
             </div>
 
-            {/* Alarm Triggered Modal */}
+            {/* YouTube Player Modal */}
             <AnimatePresence>
-                {alarmTriggered && (
+                {showYouTubePlayer && (
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+                        className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4"
+                        onClick={(e) => {
+                            // Prevent closing when clicking on the player
+                            if (e.target === e.currentTarget) {
+                                stopAlarm();
+                            }
+                        }}
                     >
                         <motion.div
                             initial={{ scale: 0.9, y: 20 }}
                             animate={{ scale: 1, y: 0 }}
                             exit={{ scale: 0.9, y: 20 }}
-                            className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-xl"
+                            className="bg-white rounded-2xl p-6 max-w-4xl w-full shadow-xl"
                         >
-                            <div className="text-center">
-                                <Bell className="w-16 h-16 text-orange-500 mx-auto mb-4 animate-bounce" />
-                                <h3 className="text-xl font-bold mb-2">Báo thức!</h3>
-                                <p className="text-gray-600 mb-2">
-                                    {alarms.find(a => a.id === alarmTriggered)?.label}
+                            <div className="text-center mb-4">
+                                <Bell className="w-12 h-12 text-orange-500 mx-auto mb-2 animate-bounce" />
+                                <h3 className="text-xl font-bold">Báo thức!</h3>
+                                <p className="text-gray-600">
+                                    {alarms.find(a => a.id === alarmTriggered)?.label} - {alarms.find(a => a.id === alarmTriggered)?.time}
                                 </p>
-                                <p className="text-3xl font-bold text-blue-600 mb-6">
-                                    {alarms.find(a => a.id === alarmTriggered)?.time}
-                                </p>
-                                <div className="flex gap-3">
-                                    <button
-                                        onClick={snoozeAlarm}
-                                        className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2"
-                                    >
-                                        <Coffee className="w-4 h-4" />
-                                        Báo lại sau 5 phút
-                                    </button>
-                                    <button
-                                        onClick={stopAlarm}
-                                        className="flex-1 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold rounded-xl transition-all"
-                                    >
-                                        Tắt
-                                    </button>
-                                </div>
+                            </div>
+
+                            {/* YouTube Player Container */}
+                            <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+                                <div
+                                    ref={playerContainerRef}
+                                    className="absolute top-0 left-0 w-full h-full rounded-lg overflow-hidden"
+                                />
+                            </div>
+
+                            {/* Controls */}
+                            <div className="flex gap-3 mt-4">
+                                <button
+                                    onClick={snoozeAlarm}
+                                    className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2"
+                                >
+                                    <Coffee className="w-4 h-4" />
+                                    Báo lại sau 5 phút
+                                </button>
+                                <button
+                                    onClick={stopAlarm}
+                                    className="flex-1 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold rounded-xl transition-all"
+                                >
+                                    Tắt
+                                </button>
                             </div>
                         </motion.div>
                     </motion.div>
