@@ -14,7 +14,8 @@ import {
     Trash2,
     Volume2,
     VolumeX,
-    Coffee
+    Coffee,
+    Smartphone
 } from 'lucide-react';
 import { cn } from '../utils';
 
@@ -59,6 +60,9 @@ const AlarmClockTool = () => {
     const audioRef = useRef<HTMLAudioElement | null>(null);
     const [hasUserInteracted, setHasUserInteracted] = useState(false);
 
+    // Vibration states
+    const vibrationInterval = useRef<NodeJS.Timeout | null>(null);
+
     // Alarm states
     const [alarms, setAlarms] = useState<Alarm[]>([
         {
@@ -101,7 +105,7 @@ const AlarmClockTool = () => {
             setHasUserInteracted(true);
             // Play thử audio nếu đang có báo thức
             if (showAlarmModal && audioRef.current) {
-                audioRef.current.play().catch(() => {});
+                audioRef.current.play().catch(() => { });
             }
         };
 
@@ -116,32 +120,70 @@ const AlarmClockTool = () => {
         };
     }, [showAlarmModal]);
 
-    // Phát audio ngay khi modal mở
+    // Phát audio và rung khi modal mở
     useEffect(() => {
         if (showAlarmModal && audioRef.current) {
+            // Bắt đầu rung (chỉ trên mobile)
+            startVibration();
+
             const playAudio = async () => {
                 try {
                     await audioRef.current?.play();
                     console.log('Đã phát âm thanh tự động');
                 } catch (error) {
                     console.log('Không thể phát tự động:', error);
-                    // Trên mobile, cần user tương tác
-                    // Sẽ thử lại khi user click bất kỳ đâu
                 }
             };
-            
-            // Thử phát ngay
+
             playAudio();
-            
-            // Nếu chưa có interaction, thử lại sau 1s
+
             if (!hasUserInteracted) {
                 const timer = setTimeout(() => {
                     playAudio();
                 }, 1000);
                 return () => clearTimeout(timer);
             }
+        } else {
+            // Dừng rung khi đóng modal
+            stopVibration();
         }
     }, [showAlarmModal, hasUserInteracted]);
+
+    // Hàm bắt đầu rung
+    const startVibration = () => {
+        // Kiểm tra xem thiết bị có hỗ trợ rung không
+        if (!isMobile || !navigator.vibrate) {
+            console.log('Thiết bị không hỗ trợ rung');
+            return;
+        }
+
+        // Tạo mẫu rung: rung 1 giây, nghỉ 0.5 giây, lặp lại
+        const vibrationPattern = [1000, 500, 1000, 500, 1000, 500, 1000];
+
+        // Bắt đầu rung
+        navigator.vibrate(vibrationPattern);
+
+        // Tạo interval để rung liên tục (vì vibrate chỉ chạy 1 lần)
+        vibrationInterval.current = setInterval(() => {
+            if (showAlarmModal) {
+                navigator.vibrate(vibrationPattern);
+            }
+        }, 6000); // Lặp lại mỗi 6 giây
+
+        console.log('Đã bắt đầu rung');
+    };
+
+    // Hàm dừng rung
+    const stopVibration = () => {
+        if (vibrationInterval.current) {
+            clearInterval(vibrationInterval.current);
+            vibrationInterval.current = null;
+        }
+
+        if (navigator.vibrate) {
+            navigator.vibrate(0); // Dừng rung ngay lập tức
+        }
+    };
 
     const startAlarmSound = async () => {
         if (!soundEnabled || !audioRef.current) return;
@@ -150,6 +192,8 @@ const AlarmClockTool = () => {
 
     const stopAlarmSound = () => {
         setShowAlarmModal(false);
+        stopVibration(); // Dừng rung khi tắt báo thức
+
         if (audioRef.current) {
             audioRef.current.pause();
             audioRef.current.currentTime = 0;
@@ -487,6 +531,7 @@ const AlarmClockTool = () => {
             </div>
 
             {/* Alarm Modal */}
+            {/* Alarm Modal */}
             <AnimatePresence>
                 {showAlarmModal && (
                     <motion.div
@@ -515,10 +560,19 @@ const AlarmClockTool = () => {
                                 {alarms.find(a => a.id === alarmTriggered)?.time}
                             </p>
 
-                            {/* Hiển thị trạng thái đang phát */}
+                            {/* Hiển thị trạng thái - ĐÃ SỬA LỖI */}
                             <div className="w-full mb-4 py-3 bg-green-100 text-green-800 font-bold rounded-xl flex items-center justify-center gap-2">
-                                <Volume2 className="w-5 h-5 animate-pulse" />
-                                Đang phát...
+                                {isMobile && typeof navigator.vibrate !== 'undefined' ? (
+                                    <>
+                                        <Smartphone className="w-5 h-5 animate-pulse" />
+                                        <span>Đang rung và phát...</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Volume2 className="w-5 h-5 animate-pulse" />
+                                        <span>Đang phát...</span>
+                                    </>
+                                )}
                             </div>
 
                             <div className="flex gap-3">
