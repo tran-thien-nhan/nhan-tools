@@ -119,13 +119,14 @@ const AlarmClockTool = () => {
     }, []);
 
     // Initialize YouTube player when needed
+    // Sửa trong initYouTubePlayer
     const initYouTubePlayer = () => {
         if (!playerContainerRef.current || youTubePlayerRef.current || !window.YT) return;
 
         youTubePlayerRef.current = new window.YT.Player(playerContainerRef.current, {
             videoId: 'dQw4w9WgXcQ',
             playerVars: {
-                autoplay: 0, // Tắt autoplay mặc định
+                autoplay: 1,
                 controls: 0,
                 disablekb: 1,
                 fs: 0,
@@ -135,34 +136,26 @@ const AlarmClockTool = () => {
                 showinfo: 0,
                 loop: 1,
                 playlist: 'dQw4w9WgXcQ',
-                playsinline: 1 // Quan trọng cho mobile
+                playsinline: 1,
+                mute: 1, // Mute video để có thể autoplay
+                enablejsapi: 1
             },
             events: {
                 onReady: (event: any) => {
                     console.log('YouTube player ready');
                     event.target.setVolume(100);
-                    // Thử phát video sau khi sẵn sàng
-                    if (soundEnabled) {
-                        // Trên mobile, cần user interaction để phát video
-                        // Nên chúng ta sẽ thử phát và bắt lỗi
-                        try {
-                            event.target.playVideo().catch((e: any) => {
-                                console.log('Auto-play bị chặn trên mobile, cần user tương tác');
-                                // Hiển thị nút play thủ công
-                            });
-                        } catch (e) {
-                            console.log('Auto-play bị chặn');
+
+                    // Thử unmute sau khi đã autoplay
+                    setTimeout(() => {
+                        if (soundEnabled) {
+                            event.target.unMute();
                         }
-                    }
+                    }, 1000);
                 },
                 onStateChange: (event: any) => {
-                    // Video ended
                     if (event.data === window.YT.PlayerState.ENDED) {
-                        event.target.playVideo(); // Replay
+                        event.target.playVideo();
                     }
-                },
-                onError: (event: any) => {
-                    console.log('YouTube error:', event.data);
                 }
             }
         });
@@ -174,7 +167,7 @@ const AlarmClockTool = () => {
             try {
                 // Thử phát video
                 const playPromise = youTubePlayerRef.current.playVideo();
-                
+
                 // Xử lý Promise cho mobile
                 if (playPromise !== undefined) {
                     playPromise.catch((error: any) => {
@@ -648,8 +641,8 @@ const AlarmClockTool = () => {
                             </div>
 
                             {/* YouTube Player Container */}
-                            <div 
-                                className="relative w-full cursor-pointer" 
+                            <div
+                                className="relative w-full cursor-pointer"
                                 style={{ paddingBottom: '56.25%' }}
                                 onClick={handlePlayerClick}
                             >
