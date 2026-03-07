@@ -56,8 +56,9 @@ const AlarmClockTool = () => {
 
     // Audio states
     const [showAlarmModal, setShowAlarmModal] = useState(false);
-    const audioRef = useRef<HTMLAudioElement | null>(null);
     const audioContextRef = useRef<AudioContext | null>(null);
+    const audioBufferRef = useRef<AudioBuffer | null>(null);
+    const audioSourceRef = useRef<AudioBufferSourceNode | null>(null);
 
     // Alarm states
     const [alarms, setAlarms] = useState<Alarm[]>([
@@ -81,19 +82,33 @@ const AlarmClockTool = () => {
         }
     ]);
 
-    // Khởi tạo audio
+    // Load và decode audio file khi component mount
     useEffect(() => {
-        // Tạo audio element
-        audioRef.current = new Audio('/sounds/rickroll.mp3');
-        audioRef.current.loop = true;
-
-        // Khởi tạo AudioContext để xử lý auto-play trên mobile
+        // Khởi tạo AudioContext
         audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
 
+        // Load file MP3
+        const loadAudio = async () => {
+            try {
+                const response = await fetch('/sounds/rickroll.mp3');
+                const arrayBuffer = await response.arrayBuffer();
+                
+                if (audioContextRef.current) {
+                    const decodedBuffer = await audioContextRef.current.decodeAudioData(arrayBuffer);
+                    audioBufferRef.current = decodedBuffer;
+                    console.log('Audio đã được load thành công');
+                }
+            } catch (error) {
+                console.log('Lỗi khi load audio:', error);
+            }
+        };
+
+        loadAudio();
+
         return () => {
-            if (audioRef.current) {
-                audioRef.current.pause();
-                audioRef.current = null;
+            if (audioSourceRef.current) {
+                audioSourceRef.current.stop();
+                audioSourceRef.current.disconnect();
             }
             if (audioContextRef.current) {
                 audioContextRef.current.close();
@@ -101,59 +116,66 @@ const AlarmClockTool = () => {
         };
     }, []);
 
-    // Tự động thử phát audio khi modal mở
+    // Tự động phát khi modal mở
     useEffect(() => {
-        if (showAlarmModal && audioRef.current && !isAudioPlaying) {
-            // Tạo một timeout nhỏ để đảm bảo modal đã render xong
-            const autoPlayTimer = setTimeout(() => {
-                handlePlayClick();
+        if (showAlarmModal && audioBufferRef.current && audioContextRef.current) {
+            // Tạo timeout nhỏ để đảm bảo modal đã render
+            const timer = setTimeout(() => {
+                playAudio();
             }, 100);
-
-            return () => clearTimeout(autoPlayTimer);
+            return () => clearTimeout(timer);
         }
     }, [showAlarmModal]);
 
-    const startAlarmSound = async () => {
-        if (!soundEnabled || !audioRef.current) return;
-
-        setShowAlarmModal(true);
+    const playAudio = async () => {
+        if (!audioContextRef.current || !audioBufferRef.current) return;
 
         try {
-            // Đánh thức AudioContext trên mobile
-            if (audioContextRef.current?.state === 'suspended') {
+            // Đánh thức AudioContext (quan trọng cho mobile)
+            if (audioContextRef.current.state === 'suspended') {
                 await audioContextRef.current.resume();
             }
-        } catch (error) {
-            console.log('Lỗi khi đánh thức AudioContext:', error);
-        }
-    };
 
-    const stopAlarmSound = () => {
-        setShowAlarmModal(false);
-        if (audioRef.current) {
-            audioRef.current.pause();
-            audioRef.current.currentTime = 0;
+            // Dừng âm thanh cũ nếu đang phát
+            if (audioSourceRef.current) {
+                audioSourceRef.current.stop();
+                audioSourceRef.current.disconnect();
+            }
+
+            // Tạo source mới
+            audioSourceRef.current = audioContextRef.current.createBufferSource();
+            audioSourceRef.current.buffer = audioBufferRef.current;
+            audioSourceRef.current.loop = true;
+            audioSourceRef.current.connect(audioContextRef.current.destination);
+            
+            // Phát âm thanh
+            audioSourceRef.current.start();
+            setIsAudioPlaying(true);
+            console.log('Đang phát âm thanh qua Web Audio API');
+
+        } catch (error) {
+            console.log('Lỗi khi phát âm thanh:', error);
             setIsAudioPlaying(false);
         }
     };
 
-    // Hàm phát thủ công khi user click
-    const handlePlayClick = async () => {
-        if (audioRef.current) {
-            try {
-                // Đánh thức AudioContext nếu cần
-                if (audioContextRef.current?.state === 'suspended') {
-                    await audioContextRef.current.resume();
-                }
-                
-                await audioRef.current.play();
-                setIsAudioPlaying(true);
-                console.log('Đã phát âm thanh thành công');
-            } catch (e) {
-                console.log('Lỗi khi phát:', e);
-                setIsAudioPlaying(false);
-            }
+    const stopAudio = () => {
+        if (audioSourceRef.current) {
+            audioSourceRef.current.stop();
+            audioSourceRef.current.disconnect();
+            audioSourceRef.current = null;
         }
+        setIsAudioPlaying(false);
+    };
+
+    const startAlarmSound = async () => {
+        if (!soundEnabled) return;
+        setShowAlarmModal(true);
+    };
+
+    const stopAlarmSound = () => {
+        setShowAlarmModal(false);
+        stopAudio();
     };
 
     // Common states
@@ -516,8 +538,8 @@ const AlarmClockTool = () => {
                                 {alarms.find(a => a.id === alarmTriggered)?.time}
                             </p>
 
-                            {/* Ẩn nút "Phát âm thanh" vì đã tự động phát */}
-                            {isMobile && !isAudioPlaying && (
+                            {/* Hiển thị trạng thái phát âm thanh */}
+                            {!isAudioPlaying && (
                                 <div className="w-full mb-4 py-3 bg-yellow-100 text-yellow-800 font-bold rounded-xl flex items-center justify-center gap-2">
                                     <Volume2 className="w-5 h-5 animate-pulse" />
                                     Đang phát âm thanh...
